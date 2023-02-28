@@ -1,12 +1,12 @@
 import { GitLogEntry, HydratedGitObject, HydratedGitTreeObject } from "~/analyzer/model"
-import { DetailsKey, DetailsValue, LegendLabel } from "./util"
-import { Fragment, useState } from "react"
+import { Fragment } from "react"
 import { dateFormatLong } from "~/util"
 import { Spacer } from "./Spacer"
-import { ExpandDown } from "./Toggle"
 import { AuthorDistEntries, AuthorDistHeader, DetailsHeading } from "./Details"
 import styled from "styled-components"
 import { useData } from "~/contexts/DataContext"
+import Accordion, { AccordionData } from "./Accordion"
+import { WidthFull } from "@styled-icons/material"
 
 interface props {
   state: "idle" | "submitting" | "loading"
@@ -18,57 +18,77 @@ export function FileHistoryElement(props: props) {
 
   let fileCommits: GitLogEntry[] = []
   if (props.clickedObject.type === "blob") {
-    fileCommits = props.clickedObject.commits.map(c => analyzerData.commits[c])
+    fileCommits = props.clickedObject.commits.map((c) => analyzerData.commits[c])
   } else {
     try {
-      fileCommits = Array.from(calculateCommitsForSubTree(props.clickedObject)).map(c => analyzerData.commits[c]).sort((a, b) => b.time - a.time)
+      fileCommits = Array.from(calculateCommitsForSubTree(props.clickedObject))
+        .map((c) => analyzerData.commits[c])
+        .sort((a, b) => b.time - a.time)
     } catch (e) {
       console.log(e)
     }
   }
 
-  return (
-    <CommitHistory commits={fileCommits} />
-  )
+  return <CommitHistory commits={fileCommits} />
 }
 
 interface CommitDistFragProps {
   items: GitLogEntry[]
   show: boolean
+  commitCutoff: number
 }
 
 export function CommitDistFragment(props: CommitDistFragProps) {
-  if (!props.show) return null
+  if (!props.show || !props.items) return null
+
+  const cleanGroupByDateItems: { [key: string]: string[] } = {};
+  props.items.map((commit) => {
+    const date: string = dateFormatLong(commit.time);
+    if (!cleanGroupByDateItems[date]) {
+      cleanGroupByDateItems[date] = []
+    }
+    if (!cleanGroupByDateItems[date].includes(commit.message)) {
+      cleanGroupByDateItems[date].push(commit.message)
+    }
+  })
+
+  const items: Array<AccordionData> = new Array<AccordionData>
+  for (const [key, values] of Object.entries(cleanGroupByDateItems)) {
+    items.push({
+      title: key,
+      content: (
+        <>
+        {values.map((value: string) => {
+          return (
+            <>
+              <p>{value}</p>
+            </>
+          )
+        })}
+        </>
+      )
+    })
+  }
 
   return (
     <>
-      {props.items.map((commit) => {
-        return (
-          <Fragment key={commit.time.toString() + commit.message}>
-            <DetailsKey title={commit.message + " (" + commit.author + ")"} grow>
-              <LegendLabel style={{ opacity: 0.7 }}>{commit.message}</LegendLabel>
-            </DetailsKey>
-            <DetailsValue>{dateFormatLong(commit.time)}</DetailsValue>
-          </Fragment>
-        )
-      })}
+      <Fragment key={new Date().toString()}>
+        <Accordion items={items} commitCutoff={props.commitCutoff}></Accordion>
+      </Fragment>
     </>
   )
 }
 
 function CommitHistory(props: { commits: GitLogEntry[] | undefined }) {
-  const [collapse, setCollapse] = useState<boolean>(true)
   const commits = props.commits ?? []
-  const commitCutoff = 2
+  const commitCutoff = 3
 
-  if (commits.length <= commitCutoff + 1) {
+  if (commits.length == 0) {
     return (
       <>
         <DetailsHeading>Commit History</DetailsHeading>
         <Spacer />
-        <AuthorDistEntries>
-          {commits.length > 0 ? <CommitDistFragment show={true} items={commits} /> : <p>No commits found</p>}
-        </AuthorDistEntries>
+        <AuthorDistEntries>{<p>No commits found</p>}</AuthorDistEntries>
       </>
     )
   }
@@ -76,23 +96,19 @@ function CommitHistory(props: { commits: GitLogEntry[] | undefined }) {
     <>
       <AuthorDistHeader>
         <DetailsHeading>Commit History</DetailsHeading>
-        <ExpandDown relative={true} collapse={collapse} toggle={() => setCollapse(!collapse)} />
       </AuthorDistHeader>
       <Spacer xs />
       <AuthorDistEntries>
-        <CommitDistFragment show={true} items={commits.slice(0, commitCutoff)} />
-        <CommitDistFragment show={!collapse} items={commits.slice(commitCutoff)} />
+        <CommitDistFragment show={true} items={commits} commitCutoff={commitCutoff} />
         <Spacer />
-        <CommitDistOther show={collapse} items={commits.slice(commitCutoff)} toggle={() => setCollapse(!collapse)} />
       </AuthorDistEntries>
-      </>
+    </>
   )
 }
 
-
 interface CommitDistOtherProps {
   toggle: () => void
-  items: GitLogEntry[]
+  items: Array<any>
   show: boolean
 }
 
