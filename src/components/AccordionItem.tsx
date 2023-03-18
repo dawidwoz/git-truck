@@ -36,14 +36,18 @@ const AccordionItemButton = styled.div<{ rotation: number }>`
     transform: rotate(-${({ rotation }) => rotation}deg);
   }
 `
-const AccordionItemContainer = styled.div`
+const AccordionItemContainer = styled.ul`
+  display: block;
+  margin: 0;
+  padding: 0;
   transition: height 0.2s ease-in-out;
-  overflow: hidden;
   font-size: 14px;
 `
 
-const AccordionItemContent = styled.div`
-  padding: 5px 5px;
+export const AccordionItemContent = styled.li<{ image: string }>`
+  list-style-image: url(${({ image }) => image});
+  margin: 5px;
+  margin-left: 15px;
 `
 
 function AccordionItem({ data, isOpen, btnOnClick }: { data: AccordionData; isOpen: boolean; btnOnClick: () => void }) {
@@ -60,10 +64,16 @@ function AccordionItem({ data, isOpen, btnOnClick }: { data: AccordionData; isOp
   return (
     <AccordionItemElement>
       <AccordionItemTitle>
-        <AccordionItemButton rotation={isOpen ? 180 : 0} onClick={btnOnClick}>{data.title}</AccordionItemButton>
+        <AccordionItemButton rotation={isOpen ? 180 : 0} onClick={btnOnClick}>
+          {data.title}
+        </AccordionItemButton>
       </AccordionItemTitle>
       <AccordionItemContainer style={{ height }}>
-        {isOpen && <AccordionItemContent>{data.content}</AccordionItemContent>}
+        {isOpen && (
+          <div>
+            {data.content}
+          </div>
+        )}
       </AccordionItemContainer>
     </AccordionItemElement>
   )
