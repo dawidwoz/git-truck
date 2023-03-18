@@ -6,7 +6,8 @@ import { AuthorDistEntries, AuthorDistHeader, DetailsHeading } from "./Details"
 import styled from "styled-components"
 import { useData } from "~/contexts/DataContext"
 import Accordion, { AccordionData } from "./Accordion"
-import { WidthFull } from "@styled-icons/material"
+import { AccordionItemContent } from "./AccordionItem"
+import commitIcon from "~/assets/commit_icon.png"
 
 interface props {
   state: "idle" | "submitting" | "loading"
@@ -61,7 +62,7 @@ export function CommitDistFragment(props: CommitDistFragProps) {
         {values.map((value: string) => {
           return (
             <>
-              <p>{value}</p>
+              <AccordionItemContent image={commitIcon}>{value}</AccordionItemContent>
             </>
           )
         })}
