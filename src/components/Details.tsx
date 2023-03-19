@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useId, useRef, useState } from "react"
 import { Form, useLocation, useTransition } from "@remix-run/react"
 import styled from "styled-components"
-import type { HydratedGitBlobObject, HydratedGitObject, HydratedGitTreeObject } from "~/analyzer/model"
+import type { GitLogEntry, HydratedGitBlobObject, HydratedGitObject, HydratedGitTreeObject } from "~/analyzer/model"
 import { AuthorDistFragment } from "~/components/AuthorDistFragment"
 import { AuthorDistOther } from "~/components/AuthorDistOther"
 import { Spacer } from "~/components/Spacer"
 import { ExpandDown } from "~/components/Toggle"
-import { Box, BoxTitle, DetailsKey, DetailsValue, CloseButton, Button } from "~/components/util"
+import { Box, BoxTitle, DetailsKey, DetailsValue, CloseButton, Button, SearchField, BoxP } from "~/components/util"
 import { useClickedObject } from "~/contexts/ClickedContext"
 import { useData } from "~/contexts/DataContext"
 import { useOptions } from "~/contexts/OptionsContext"
@@ -16,7 +16,14 @@ import byteSize from "byte-size"
 import type { AuthorshipType } from "~/metrics/metrics"
 import { PeopleAlt, OpenInNew } from "@styled-icons/material"
 import { EyeClosed } from "@styled-icons/octicons"
-import { FileHistoryElement } from "./FileHistoryElement"
+import { calculateCommitsForSubTree, CommitDistFragment, FileHistoryElement } from "./FileHistoryElement"
+import { MenuTab, MenuItem } from "./MenuTab"
+import { Checkbox } from "./Options"
+import { Tag, TagData } from "./Tag"
+
+const Label = styled.label`
+  font-size: 14px;
+`
 
 function OneFolderOut(path: string) {
   const index = path.lastIndexOf("/")
@@ -27,6 +34,89 @@ function OneFolderOut(path: string) {
 }
 
 export function Details(props: { showUnionAuthorsModal: () => void }) {
+  const { setClickedObject, clickedObject } = useClickedObject()
+  if (!clickedObject) return null
+
+  const items: Array<MenuItem> = new Array<MenuItem>()
+  items.push({
+    title: "General",
+    content: renderGeneralTab(props.showUnionAuthorsModal),
+  } as MenuItem)
+  items.push({
+    title: "Commits details",
+    content: renderCommitHistoryTab(),
+  } as MenuItem)
+  return (
+    <Box>
+      <CloseButton onClick={() => setClickedObject(null)} />
+      <Spacer xl />
+      <MenuTab items={items}></MenuTab>
+    </Box>
+  )
+}
+
+function renderCommitHistoryTab() {
+  const { setClickedObject, clickedObject } = useClickedObject()
+  if (!clickedObject) return null
+
+  const searchFieldRef = useRef<HTMLInputElement>(null)
+  const id = useId()
+  const { analyzerData } = useData()
+  const commitCutoff = 10
+  let fileCommits: GitLogEntry[] = []
+
+  if (clickedObject.type === "blob") {
+    fileCommits = clickedObject.commits.map((c) => analyzerData.commits[c])
+  } else {
+    try {
+      fileCommits = Array.from(calculateCommitsForSubTree(clickedObject))
+        .map((c) => analyzerData.commits[c])
+        .sort((a, b) => b.time - a.time)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  const tagData = {
+    tags: ["all"],
+    onRemove: (tag) => console.log(tag)
+  } as TagData
+
+  return (
+    <>
+      <BoxTitle title={clickedObject.name}>{clickedObject.name}</BoxTitle>
+      <Spacer xl />
+      <SearchField ref={searchFieldRef} id={id} type="search" placeholder="Search for commits..." />
+      <Spacer lg />
+      <CommitDistFragment show={true} items={fileCommits} commitCutoff={commitCutoff} />
+      <hr />
+      <BoxTitle>Filters</BoxTitle>
+      <Label>
+        <Checkbox
+          type="checkbox"
+          checked
+          //  checked={animationsEnabled}
+          //  onChange={(e) => setAnimationsEnabled(e.target.checked)}
+        />
+        <span>Show merge commits</span>
+      </Label>
+      <div>
+        <b>Authors:</b>
+        <SearchField placeholder="Add authors..." />
+        <Spacer lg />
+        <Tag tags={tagData.tags} onRemove={tagData.onRemove}></Tag>
+        <Spacer lg />
+        <b>Dates:</b>
+        <div>
+          From: <input type="date" />
+          To: <input type="date" />
+        </div>
+      </div>
+    </>
+  )
+}
+
+function renderGeneralTab(showUnionAuthorsModal: () => void) {
   const { setClickedObject, clickedObject } = useClickedObject()
   const location = useLocation()
   const { authorshipType } = useOptions()
@@ -52,8 +142,7 @@ export function Details(props: { showUnionAuthorsModal: () => void }) {
   const extension = last(clickedObject.name.split("."))
 
   return (
-    <Box>
-      <CloseButton onClick={() => setClickedObject(null)} />
+    <>
       <BoxTitle title={clickedObject.name}>{clickedObject.name}</BoxTitle>
       <Spacer xl />
       <DetailsEntries>
@@ -77,7 +166,7 @@ export function Details(props: { showUnionAuthorsModal: () => void }) {
       <Spacer xl />
       <FileHistoryElement state={state} clickedObject={clickedObject} />
       <Spacer />
-      <Button onClick={props.showUnionAuthorsModal}>
+      <Button onClick={showUnionAuthorsModal}>
         <PeopleAlt display="inline-block" height="1rem" />
         Merge duplicate users
       </Button>
@@ -140,7 +229,7 @@ export function Details(props: { showUnionAuthorsModal: () => void }) {
           </Button>
         </Form>
       )}
-    </Box>
+    </>
   )
 }
 

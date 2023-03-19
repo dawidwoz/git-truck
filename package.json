@@ -29,7 +29,6 @@
     "lint": "eslint --cache --fix {src,scripts}/**/*.{ts,tsx,js,mjs}"
   },
   "devDependencies": {
-    "got": "^11.8.3",
     "@react-spring/web": "^9.7.1",
     "@remix-run/dev": "^1.13.0",
     "@remix-run/eslint-config": "^1.13.0",
@@ -63,6 +62,7 @@
     "get-port": "^6.1.2",
     "github-colors": "github:ozh/github-colors",
     "gitignore-parser": "^0.0.2",
+    "got": "^11.8.3",
     "husky": "^8.0.3",
     "ignore": "^5.2.4",
     "is-binary-path": "^2.1.0",

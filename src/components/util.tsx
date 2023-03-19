@@ -176,6 +176,7 @@ export const Select = styled.select`
 export const SearchField = styled.input`
   border: 1px var(--border-color) solid;
   flex-grow: 1;
+  font-size: 14px;
   border-radius: calc(0.5 * var(--unit));
   padding: var(--unit);
 `

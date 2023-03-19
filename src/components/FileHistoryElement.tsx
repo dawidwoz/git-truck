@@ -9,8 +9,9 @@ import Accordion, { AccordionData } from "./Accordion"
 import { AccordionItemContent } from "./AccordionItem"
 import commitIcon from "~/assets/commit_icon.png"
 
+export type State = "idle" | "submitting" | "loading"
 interface props {
-  state: "idle" | "submitting" | "loading"
+  state: State
   clickedObject: HydratedGitObject
 }
 
@@ -62,7 +63,7 @@ export function CommitDistFragment(props: CommitDistFragProps) {
         {values.map((value: string) => {
           return (
             <>
-              <AccordionItemContent image={commitIcon}>{value}</AccordionItemContent>
+              <AccordionItemContent key={Math.random() + "--itemContentAccordion"} image={commitIcon}>{value}</AccordionItemContent>
             </>
           )
         })}
@@ -74,7 +75,7 @@ export function CommitDistFragment(props: CommitDistFragProps) {
   return (
     <>
       <Fragment key={new Date().toString()}>
-        <Accordion items={items} commitCutoff={props.commitCutoff}></Accordion>
+        <Accordion multipleOpen={true} openByDefault={true} items={items} commitCutoff={props.commitCutoff}></Accordion>
       </Fragment>
     </>
   )
@@ -128,7 +129,7 @@ export function CommitDistOther(props: CommitDistOtherProps) {
   return <OtherText onClick={props.toggle}>+ {props.items.length} more</OtherText>
 }
 
-function calculateCommitsForSubTree(tree: HydratedGitTreeObject) {
+export function calculateCommitsForSubTree(tree: HydratedGitTreeObject) {
   const commitSet = new Set<string>()
   subTree(tree)
   function subTree(tree: HydratedGitTreeObject) {
