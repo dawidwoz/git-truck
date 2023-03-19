@@ -12,6 +12,7 @@ import { GitCaller } from "~/analyzer/git-caller.server"
 import { getPathFromRepoAndHead } from "~/util"
 import { useState } from "react"
 import { RevisionSelect } from "~/components/RevisionSelect"
+import { Footer } from "~/components/Footer";
 
 interface IndexData {
   repositories: Repository[]
@@ -46,7 +47,7 @@ export default function Index() {
   return (
     <Wrapper>
       <Spacer />
-      <H1>Welcome to Git Truck!</H1>
+      <H1>Welcome to Git Truck Beta!</H1>
 
       <Spacer />
       <p>
@@ -76,6 +77,7 @@ export default function Index() {
           </nav>
         </>
       )}
+      <Footer></Footer>
     </Wrapper>
   )
 }
@@ -120,6 +122,7 @@ const Wrapper = styled.div`
   width: calc(100vw - 2 * var(--side-panel-width));
   margin: auto;
   padding: var(--unit);
+  min-height: 100vh;
 
   @media (max-width: 1000px) {
     width: 100vw;
