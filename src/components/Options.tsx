@@ -7,7 +7,7 @@ import { Chart, useOptions } from "../contexts/OptionsContext"
 import { Spacer } from "./Spacer"
 import styled from "styled-components"
 
-const Checkbox = styled.input`
+export const Checkbox = styled.input`
   margin: var(--unit);
 `
 
@@ -34,13 +34,6 @@ export function Options() {
       <Spacer />
       <EnumSelect label="Metric" enum={Metric} onChange={(metric: MetricType) => setMetricType(metric)} />
       <Spacer />
-      {/* <EnumSelect
-        label="Authorship data"
-        enum={Authorship}
-        onChange={(baseData: AuthorshipType) => setAuthorshipType(baseData)}
-        hidden={!isMetricWithHistoricalOption(metricType)}
-      />
-      <Spacer /> */}
       <label>
         <Checkbox
           type="checkbox"
