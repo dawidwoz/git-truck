@@ -249,6 +249,7 @@ export class GitCaller {
     const args = [
       "log",
       this.branch,
+      "--max-count=5000", // Temporary solution to enable more repos to work with this product
       "--stat=1000000",
       "--stat-graph-width=1",
       '--format="author <|%an|> date <|%at|> message <|%s|> body <|%b|> hash <|%H|>"',

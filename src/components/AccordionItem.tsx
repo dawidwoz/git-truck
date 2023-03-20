@@ -70,7 +70,7 @@ function AccordionItem({ data, isOpen, btnOnClick }: { data: AccordionData; isOp
       </AccordionItemTitle>
       <AccordionItemContainer style={{ height }}>
         {isOpen && (
-          <div>
+          <div style={{overflow: "hidden"}}>
             {data.content}
           </div>
         )}

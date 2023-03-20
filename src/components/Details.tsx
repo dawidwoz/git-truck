@@ -11,7 +11,7 @@ import { useClickedObject } from "~/contexts/ClickedContext"
 import { useData } from "~/contexts/DataContext"
 import { useOptions } from "~/contexts/OptionsContext"
 import { usePath } from "~/contexts/PathContext"
-import { dateFormatLong, last } from "~/util"
+import { dateFormatLong, dateInputFormat, last } from "~/util"
 import byteSize from "byte-size"
 import type { AuthorshipType } from "~/metrics/metrics"
 import { PeopleAlt, OpenInNew } from "@styled-icons/material"
@@ -21,6 +21,8 @@ import { MenuTab, MenuItem } from "./MenuTab"
 import { Checkbox } from "./Options"
 import { Tag, TagData } from "./Tag"
 import { AutoTextSize } from "auto-text-size"
+import { CommitTabContext, useCommitTab } from "~/contexts/CommitTabContext"
+import { start } from "repl"
 
 const Label = styled.label`
   font-size: 14px;
@@ -58,28 +60,49 @@ export function Details(props: { showUnionAuthorsModal: () => void }) {
 
 function renderCommitHistoryTab() {
   const { setClickedObject, clickedObject } = useClickedObject()
+  const { startDate, setStartDate, endDate, setEndDate } = useCommitTab()
+  const [mergeCommitsEnabled, setMergeCommitsEnabled] = useState(true)
+  const [author, setAuthor] = useState<string>("")
+  const [message, setMessage] = useState<string>("")
   if (!clickedObject) return null
-
+  
   const searchFieldRef = useRef<HTMLInputElement>(null)
   const id = useId()
   const { analyzerData } = useData()
   const commitCutoff = 10
   let fileCommits: GitLogEntry[] = []
-
+  
   if (clickedObject.type === "blob") {
-    fileCommits = clickedObject.commits.map((c) => analyzerData.commits[c])
+  if (!clickedObject.commits) clickedObject.commits = []
+    fileCommits = clickedObject.commits
+      .map((c) => analyzerData.commits[c])
+      .filter((c) => (message ? c.message.includes(message) : true))
+      .filter((c) => (author ? c.author.includes(author) : true))
+      .filter((c) => (!mergeCommitsEnabled ? !c.message.includes("Merge pull request") : true))
+      .filter((c) => (startDate ? c.time * 1000 > startDate : true))
+      .filter((c) => (endDate ? c.time * 1000 < endDate : true))
   } else {
     try {
       fileCommits = Array.from(calculateCommitsForSubTree(clickedObject))
         .map((c) => analyzerData.commits[c])
+        .filter((c) => (message ? c.message.includes(message) : true))
+        .filter((c) => (author ? c.author.includes(author) : true))
+        .filter((c) => (!mergeCommitsEnabled ? !c.message.includes("Merge pull request") : true))
+        .filter((c) => (startDate ? c.time * 1000 > startDate : true))
+        .filter((c) => (endDate ? c.time * 1000 < endDate : true))
         .sort((a, b) => b.time - a.time)
     } catch (e) {
       console.log(e)
     }
   }
 
+  const startValue = fileCommits[fileCommits.length - 1] != undefined
+    ? dateInputFormat(fileCommits[fileCommits.length - 1].time)
+    : ""
+  const endValue = fileCommits[0] != undefined ? dateInputFormat(fileCommits[0].time + 86400) : ""
+
   const tagData = {
-    tags: ["all"],
+    tags: [],
     onRemove: (tag) => console.log(tag),
   } as TagData
 
@@ -91,7 +114,13 @@ function renderCommitHistoryTab() {
         </AutoTextSize>
       </div>
       <Spacer xl />
-      <SearchField ref={searchFieldRef} id={id} type="search" placeholder="Search for commits..." />
+      <SearchField
+        ref={searchFieldRef}
+        onChange={(e) => setMessage(e.target.value)}
+        id={id}
+        type="search"
+        placeholder="Search for commits..."
+      />
       <Spacer lg />
       <CommitDistFragment show={true} items={fileCommits} commitCutoff={commitCutoff} />
       <hr />
@@ -99,23 +128,24 @@ function renderCommitHistoryTab() {
       <Label>
         <Checkbox
           type="checkbox"
-          defaultChecked
-          //  checked={animationsEnabled}
-          //  onChange={(e) => setAnimationsEnabled(e.target.checked)}
+          checked={mergeCommitsEnabled}
+          onChange={(e) => setMergeCommitsEnabled(e.target.checked)}
         />
         <span>Show merge commits</span>
       </Label>
       <div>
-        <b>Authors:</b>
-        <SearchField placeholder="Add authors..." />
+        <b>Author:</b>
+        <SearchField onChange={(e) => setAuthor(e.target.value)} placeholder="Add author..." />
         <Spacer lg />
         <Tag tags={tagData.tags} onRemove={tagData.onRemove}></Tag>
         <Spacer lg />
         <b>Dates:</b>
         <div>
-          From: <input type="date" />
+          From:
+          <input type="date" defaultValue={startValue} onChange={(e) => setStartDate(e.target.valueAsNumber)} />
           <Spacer md />
-          To: <input type="date" />
+          To:
+          <input type="date" defaultValue={endValue} onChange={(e) => setEndDate(e.target.valueAsNumber)} />
         </div>
       </div>
     </>
