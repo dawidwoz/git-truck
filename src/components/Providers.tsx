@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react"
 import type { HydratedGitBlobObject, HydratedGitObject } from "~/analyzer/model"
 import { ClickedObjectContext } from "~/contexts/ClickedContext"
+import { CommitTab, CommitTabContext, getDefaultCommitTab } from "~/contexts/CommitTabContext"
 import type { RepoData } from "~/routes/$repo.$"
 import { DataContext } from "../contexts/DataContext"
 import { MetricsContext } from "../contexts/MetricContext"
@@ -18,12 +19,33 @@ interface ProvidersProps {
 
 export function Providers({ children, data }: ProvidersProps) {
   const [options, setOptions] = useState<Options | null>(null)
+  const [commitTab, setCommitTab] = useState<CommitTab | null>(null)
   const [searchText, setSearchText] = useState("")
   const [searchResults, setSearchResults] = useState<HydratedGitObject[]>([])
   const [path, setPath] = useState(data.repo.name)
   const [clickedObject, setClickedObject] = useState<HydratedGitObject | null>(null)
 
   const metricsData: MetricsData = useMemo(() => createMetricsData(data.analyzerData), [data])
+
+  const commitTabValue = useMemo(
+    () => ({
+      ...getDefaultCommitTab(),
+      ...commitTab,
+      setStartDate: (newDate: number) => {
+        setCommitTab((prevValue) => ({
+          ...(prevValue ?? getDefaultCommitTab()),
+          startDate: newDate,
+        }))
+      },
+      setEndDate: (newDate: number) => {
+        setCommitTab((prevValue) => ({
+          ...(prevValue ?? getDefaultCommitTab()),
+          endDate: newDate,
+        }))
+      },
+    }),
+    [commitTab]
+  )
 
   const optionsValue = useMemo(
     () => ({
@@ -82,7 +104,7 @@ export function Providers({ children, data }: ProvidersProps) {
           >
             <PathContext.Provider value={{ path, setPath }}>
               <ClickedObjectContext.Provider value={{ clickedObject, setClickedObject }}>
-                {children}
+                <CommitTabContext.Provider value={commitTabValue}>{children}</CommitTabContext.Provider>
               </ClickedObjectContext.Provider>
             </PathContext.Provider>
           </SearchContext.Provider>
