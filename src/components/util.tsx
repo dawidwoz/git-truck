@@ -26,6 +26,7 @@ export const semverCompare = (a: string, b: string): number => {
 
 const titleBaseStyles = css`
   font-weight: bold;
+  font-size: inherit;
   margin-bottom: 0;
   margin-top: 0;
   color: var(--title-color);
@@ -36,6 +37,10 @@ const titleBaseStyles = css`
   display: flex;
   align-items: center;
   justify-content: space-between;
+`
+
+export const BaseTitle = styled.h2`
+  ${titleBaseStyles}
 `
 
 export const BoxTitle = styled.h2`

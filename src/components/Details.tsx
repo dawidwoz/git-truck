@@ -6,7 +6,7 @@ import { AuthorDistFragment } from "~/components/AuthorDistFragment"
 import { AuthorDistOther } from "~/components/AuthorDistOther"
 import { Spacer } from "~/components/Spacer"
 import { ExpandDown } from "~/components/Toggle"
-import { Box, BoxTitle, DetailsKey, DetailsValue, CloseButton, Button, SearchField, BoxP } from "~/components/util"
+import { Box, BoxTitle, DetailsKey, DetailsValue, CloseButton, Button, SearchField, BaseTitle } from "~/components/util"
 import { useClickedObject } from "~/contexts/ClickedContext"
 import { useData } from "~/contexts/DataContext"
 import { useOptions } from "~/contexts/OptionsContext"
@@ -20,6 +20,7 @@ import { calculateCommitsForSubTree, CommitDistFragment, FileHistoryElement } fr
 import { MenuTab, MenuItem } from "./MenuTab"
 import { Checkbox } from "./Options"
 import { Tag, TagData } from "./Tag"
+import { AutoTextSize } from "auto-text-size"
 
 const Label = styled.label`
   font-size: 14px;
@@ -79,12 +80,16 @@ function renderCommitHistoryTab() {
 
   const tagData = {
     tags: ["all"],
-    onRemove: (tag) => console.log(tag)
+    onRemove: (tag) => console.log(tag),
   } as TagData
 
   return (
     <>
-      <BoxTitle title={clickedObject.name}>{clickedObject.name}</BoxTitle>
+      <div>
+        <AutoTextSize maxFontSizePx={26} minFontSizePx={8}>
+          <BaseTitle title={clickedObject.name}>{clickedObject.name}</BaseTitle>
+        </AutoTextSize>
+      </div>
       <Spacer xl />
       <SearchField ref={searchFieldRef} id={id} type="search" placeholder="Search for commits..." />
       <Spacer lg />
@@ -94,7 +99,7 @@ function renderCommitHistoryTab() {
       <Label>
         <Checkbox
           type="checkbox"
-          checked
+          defaultChecked
           //  checked={animationsEnabled}
           //  onChange={(e) => setAnimationsEnabled(e.target.checked)}
         />
@@ -109,6 +114,7 @@ function renderCommitHistoryTab() {
         <b>Dates:</b>
         <div>
           From: <input type="date" />
+          <Spacer md />
           To: <input type="date" />
         </div>
       </div>
@@ -143,7 +149,11 @@ function renderGeneralTab(showUnionAuthorsModal: () => void) {
 
   return (
     <>
-      <BoxTitle title={clickedObject.name}>{clickedObject.name}</BoxTitle>
+      <div>
+        <AutoTextSize maxFontSizePx={26} minFontSizePx={8}>
+          <BaseTitle title={clickedObject.name}>{clickedObject.name}</BaseTitle>
+        </AutoTextSize>
+      </div>
       <Spacer xl />
       <DetailsEntries>
         {isBlob ? (
