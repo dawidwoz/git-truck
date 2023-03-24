@@ -2,7 +2,7 @@
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/git-truck/git-truck-beta/blob/main/LICENSE)
 [![Git Truck Beta  on NPM](https://img.shields.io/npm/v/git-truck-beta)](https://www.npmjs.com/package/git-truck-beta)
 
-![Demo](demo.gif)
+![Demo](demo_terminal.gif)
 
 # Important!
 It is a private version of the original version of GitTruck, you might be searching for the [GitTruck base version available here](https://github.com/git-truck/git-truck) 

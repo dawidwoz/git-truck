@@ -27,7 +27,7 @@ export const Footer = (props: FooterProps) => {
   const content = (
     <>
       <div style={{ textAlign: "center", padding: "10px" }}>
-        <h1>GitTruck Beta 0.02</h1>
+        <h1>Git Truck Beta 0.0.21</h1>
         <TextFooterModal>
           GitHub repository:{" "}
           <a href="https://github.com/dawidwoz/git-truck/tree/main">github.com/dawidwoz/git-truck/tree/main</a>
