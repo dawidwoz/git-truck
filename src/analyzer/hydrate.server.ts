@@ -1,9 +1,9 @@
+import { gitLogRegex, contribRegex } from "~/const"
 import type { GitCommitObject, GitLogEntry, HydratedGitBlobObject, HydratedGitCommitObject, HydratedGitTreeObject } from "./model"
 import { analyzeRenamedFile, lookupFileInTree } from "./util.server"
 import { GitCaller } from "./git-caller.server"
 import { getCoAuthors } from "./coauthors.server"
 import { log } from "./log.server"
-import { gitLogRegex, contribRegex } from "./constants"
 
 const renamedFiles = new Map<string, string>()
 

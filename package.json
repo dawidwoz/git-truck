@@ -42,6 +42,7 @@
     "@types/d3-hierarchy": "^3.1.2",
     "@types/jest": "^29.4.0",
     "@types/react": "^18.0.28",
+    "@types/react-datepicker": "^4.10.0",
     "@types/react-dom": "^18.0.11",
     "@types/semver": "^7.3.13",
     "@types/styled-components": "^5.1.26",
@@ -74,6 +75,7 @@
     "nanospinner": "^1.1.0",
     "open": "^8.4.2",
     "react": "^18.2.0",
+    "react-datepicker": "^4.10.0",
     "react-dom": "^18.2.0",
     "react-konami-code": "^2.3.0",
     "react-use": "^17.4.0",
@@ -112,10 +114,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/git-truck/git-truck.git"
+    "url": "git+https://github.com/dawidwoz/git-truck.git"
   },
   "bugs": {
-    "url": "https://github.com/git-truck/git-truck/issues"
+    "url": "https://github.com/dawidwoz/git-truck/issues"
   },
-  "homepage": "https://github.com/git-truck/git-truck#readme"
+  "homepage": "https://github.com/dawidwoz/git-truck#readme"
 }

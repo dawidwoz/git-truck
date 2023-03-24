@@ -1,6 +1,9 @@
 import { useEffect, useId, useRef, useState } from "react"
-import { Form, useLocation, useTransition } from "@remix-run/react"
+import DatePicker from "react-datepicker"
+import { AutoTextSize } from "auto-text-size"
 import styled from "styled-components"
+import { oneDayInSecond } from "~/const"
+import { Form, useLocation, useTransition } from "@remix-run/react"
 import type { GitLogEntry, HydratedGitBlobObject, HydratedGitObject, HydratedGitTreeObject } from "~/analyzer/model"
 import { AuthorDistFragment } from "~/components/AuthorDistFragment"
 import { AuthorDistOther } from "~/components/AuthorDistOther"
@@ -20,9 +23,7 @@ import { calculateCommitsForSubTree, CommitDistFragment, FileHistoryElement } fr
 import { MenuTab, MenuItem } from "./MenuTab"
 import { Checkbox } from "./Options"
 import { Tag, TagData } from "./Tag"
-import { AutoTextSize } from "auto-text-size"
 import { CommitTabContext, useCommitTab } from "~/contexts/CommitTabContext"
-import { start } from "repl"
 
 const Label = styled.label`
   font-size: 14px;
@@ -96,10 +97,16 @@ function renderCommitHistoryTab() {
     }
   }
 
-  const startValue = fileCommits[fileCommits.length - 1] != undefined
+  const startValue = startDate
+    ? new Date(startDate)
+    : fileCommits[fileCommits.length - 1] != undefined
     ? dateInputFormat(fileCommits[fileCommits.length - 1].time)
-    : ""
-  const endValue = fileCommits[0] != undefined ? dateInputFormat(fileCommits[0].time + 86400) : ""
+    : undefined
+  const endValue = endDate
+    ? new Date(endDate)
+    : fileCommits[0] != undefined
+    ? dateInputFormat(fileCommits[0].time + oneDayInSecond)
+    : undefined
 
   const tagData = {
     tags: [],
@@ -142,10 +149,18 @@ function renderCommitHistoryTab() {
         <b>Dates:</b>
         <div>
           From:
-          <input type="date" defaultValue={startValue} onChange={(e) => setStartDate(e.target.valueAsNumber)} />
+          <DatePicker
+            className="dataPickerInput"
+            selected={startValue}
+            onChange={(date) => { setStartDate(date ? date.setHours(0, 0, 0) : 0); setEndDate(endValue ? endValue.getTime() : 0)}}
+          />
           <Spacer md />
           To:
-          <input type="date" defaultValue={endValue} onChange={(e) => setEndDate(e.target.valueAsNumber)} />
+          <DatePicker
+            className="dataPickerInput"
+            selected={endValue}
+            onChange={(date) => { setEndDate(date ? date.setHours(0, 0, 0) : 0); setStartDate(startValue ? startValue.getTime() : 0) }}
+          />
         </div>
       </div>
     </>
