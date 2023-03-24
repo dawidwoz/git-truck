@@ -43,7 +43,7 @@ npm install -g git-truck@latest
   } catch (e) {
     // ignore
   }
-  console.log(`Git Truck version ${currentV}${updateMessage}\n`)
+  console.log(`Git Truck Beta version ${currentV}${updateMessage}\n`)
 
   if (args.h || args.help) {
     console.log()
@@ -93,9 +93,9 @@ for usage instructions.`)
       if (!args.headless) {
         [, err] = await describeAsyncJob(
           () => open(openURL),
-          "Opening Git Truck in your browser",
-          `Succesfully opened Git Truck in your browser`,
-          `Failed to open Git Truck in your browser. To continue, open this link manually:\n\n${openURL}`
+          "Opening Git Truck Beta in your browser",
+          `Successfully opened Git Truck Beta in your browser`,
+          `Failed to open Git Truck Beta in your browser. To continue, open this link manually:\n\n${openURL}`
         )
       }
       if (!err) console.log(`\nApplication available at ${url}`)
@@ -118,7 +118,7 @@ for usage instructions.`)
       })
     },
     "Starting Git Truck",
-    "Git Truck started",
+    "Git Truck Beta started",
     "Failed to start Git Truck"
   )
 }

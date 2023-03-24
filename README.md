@@ -1,8 +1,13 @@
-# Git Truck 🚛 &middot;
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/git-truck/git-truck/blob/main/LICENSE)
-[![Git Truck on NPM](https://img.shields.io/npm/v/git-truck)](https://www.npmjs.com/git-truck)
+# Git Truck Beta
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/git-truck/git-truck-beta/blob/main/LICENSE)
+[![Git Truck Beta  on NPM](https://img.shields.io/npm/v/git-truck-beta)](https://www.npmjs.com/package/git-truck-beta)
 
 ![Demo](demo.gif)
+
+# Important!
+It is a private version of the original version of GitTruck, you might be searching for the [GitTruck base version available here](https://github.com/git-truck/git-truck) 
+
+# Description
 
 Git-Truck provides you with a truckload of visualizations for your git repository, and helps you find out if your project has a good [truck factor](https://www.agileadvice.com/2005/05/15/agilemanagement/truck-factor/):
 
@@ -13,7 +18,7 @@ Git-Truck provides you with a truckload of visualizations for your git repositor
 | You can determine which parts of the system that are most often changed | <img width="1912" alt="image" src="https://user-images.githubusercontent.com/464519/167395118-6a4f50f4-5f37-4e0d-bcc8-144797b83e65.png"> |
 
 
-### What makes Git Truck different?
+### What makes Git Truck Beta different?
 
 - Private by design
 - Works offline
@@ -23,7 +28,7 @@ Git-Truck provides you with a truckload of visualizations for your git repositor
 
 ## [Prerequisites](#prerequisites)
 
-To use Git Truck, you will need to have the following programs installed:
+To use Git Truck Beta , you will need to have the following programs installed:
 
 - [Node.js](https://nodejs.org/en/) 16.13 or newer
 - npm 6.14 or newer
@@ -36,13 +41,9 @@ To check if these programs are installed, and what version you have, run `node -
 1. Within a git repository, or a directory containing git repositories, run the command `npx -y git-truck`.
 2. The application will now open in your default browser.
 
-**Git Truck is part of a research study, so please fill out our [short survey](https://forms.gle/9wCCAw6zae7wuwZQ6) after trying out the tool. Thanks!**
-
 ## [I got an error or I want to give feedback, what do i do?](#i-got-an-error-or-i-want-to-give-feedback-what-do-i-do)
 
-Please open an issue [here](https://github.com/git-truck/git-truck/issues) where you describe your problem. Please include git version, node version, npm version, operating system, and an image of the problem would be great too!
-
-If you have any suggestions about new features, or things that you think should be different, also feel free to open an issue.
+Please contact Dawid Wozniak by email [dawo@itu.dk](mailto:dawo@itu.dk)
 
 ## [Advanced use](#advanced-use)
 

@@ -8,12 +8,8 @@ export function diagonal(d: HierarchyRectangularNode<unknown>) {
 }
 
 export function dateInputFormat(epochTime: number) {
-   const newDate = new Date(epochTime * 1000)
-  return (
-    newDate.getFullYear() + "-" + ("0" + (newDate.getMonth() + 1)).slice(-2) + "-" + ("0" + newDate.getDate()).slice(-2)
-  )
+  return new Date(epochTime * 1000)
 }
-
 export function dateFormatLong(epochTime?: number) {
   if (!epochTime) return "Invalid date"
   return new Date(epochTime * 1000).toLocaleString("en-gb", {

@@ -7,16 +7,19 @@ import appStyles from "~/styles/App.css"
 import varsStyles from "~/styles/vars.css"
 import indexStyles from "~/styles/index.css"
 import chartStyles from "~/styles/Chart.css"
+import datapickerInput from "~/styles/DatapickerInput.css"
+import datapickerStyles from "react-datepicker/dist/react-datepicker.css"
+
 import { useEffect } from "react"
 import { Code } from "./components/util"
 
 export const meta: MetaFunction = () => {
-  return { title: "Git Truck" }
+  return { title: "Git Truck Beta" }
 }
 
 export function links() {
   return [
-    ...[appStyles, varsStyles, indexStyles, chartStyles].map((x) => ({
+    ...[appStyles, varsStyles, datapickerInput, datapickerStyles, indexStyles, chartStyles].map((x) => ({
       rel: "stylesheet",
       href: x,
     })),
