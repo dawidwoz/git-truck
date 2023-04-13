@@ -257,13 +257,13 @@ export const Grower = styled.div`
   flex-grow: 1;
 `
 
-export const SelectWithEllipsis = styled.select<{ inline?: boolean }>`
+export const SelectWithEllipsis = styled.select<{ inline?: boolean, showNoLabelWhenInactive?: boolean }>`
   text-overflow: ellipsis;
   overflow: scroll;
   width: 100%;
 
   font-size: 0.9em;
-  color: inherit;
+  color: ${(props) => (props.showNoLabelWhenInactive ? "white" : "inherit")};
   padding: ${(props) => (props.inline ? "0.2em" : "var(--unit) calc(0.5 * var(--unit))")};
 
   background: none;
@@ -271,6 +271,10 @@ export const SelectWithEllipsis = styled.select<{ inline?: boolean }>`
 
   transition: border-color 0.1s;
   border: 1px solid hsla(0, 0%, 50%, 0.3);
+
+  &:focus {
+    color: inherit !important;
+  }
 
   &:enabled {
     cursor: pointer;
