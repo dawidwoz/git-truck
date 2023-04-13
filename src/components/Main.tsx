@@ -10,7 +10,9 @@ export const MainRoot = styled.main`
   display: grid;
   grid-template-rows: auto 1fr;
   overflow: hidden;
+  resize: both;
   min-width: 100px;
+  width: calc(100vw - 2 * var(--side-panel-width));
   height: 100%;
 `
 
