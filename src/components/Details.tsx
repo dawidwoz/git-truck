@@ -152,14 +152,22 @@ function renderCommitHistoryTab() {
           <DatePicker
             className="dataPickerInput"
             selected={startValue}
-            onChange={(date) => { setStartDate(date ? date.setHours(0, 0, 0) : 0); setEndDate(endValue ? endValue.getTime() : 0)}}
+            showTimeSelect
+            onChange={(date) => {
+              setStartDate(date ? date.valueOf() : 0)
+              setEndDate(endValue ? endValue.getTime() : 0)
+            }}
           />
           <Spacer md />
           To:
           <DatePicker
             className="dataPickerInput"
             selected={endValue}
-            onChange={(date) => { setEndDate(date ? date.setHours(0, 0, 0) : 0); setStartDate(startValue ? startValue.getTime() : 0) }}
+            showTimeSelect
+            onChange={(date) => {
+              setEndDate(date ? date.valueOf() : 0)
+              setStartDate(startValue ? startValue.getTime() : 0)
+            }}
           />
         </div>
       </div>

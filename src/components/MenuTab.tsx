@@ -18,6 +18,7 @@ const TabContainer = styled.div`
 const TabLink = styled.div`
   background-color: inherit;
   float: left;
+  text-align: center;
   border: none;
   outline: none;
   cursor: pointer;
@@ -36,6 +37,7 @@ const TabContent = styled.div`
 
 export const MenuTab = ({ items }: { items: Array<MenuItem> }) => {
   const [currentIdx, setCurrentIdx] = useState(0)
+  const equalSplitValue = 100 / items.length + "%"
   return (
     <>
       <TabContainer>
@@ -43,7 +45,11 @@ export const MenuTab = ({ items }: { items: Array<MenuItem> }) => {
           <>
             <TabLink
               key={Math.random() + "--tab"}
-              style={currentIdx == idx ? { fontWeight: "bold", textDecoration: "underline" } : {}}
+              style={
+                currentIdx == idx
+                  ? { fontWeight: "bold", textDecoration: "underline", width: equalSplitValue }
+                  : { width: equalSplitValue }
+              }
               onClick={() => {
                 setCurrentIdx((currentValue) => (currentValue !== idx ? idx : currentValue))
               }}

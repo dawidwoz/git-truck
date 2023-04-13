@@ -9,6 +9,7 @@ import {
   VisibilityOff as HiddenIcon,
   Visibility as ShownIcon
 } from "@styled-icons/material"
+import { useClickedObject } from "~/contexts/ClickedContext"
 
 const Line = styled.div`
   display: grid;
@@ -44,10 +45,13 @@ function hiddenFileFormat(ignored: string) {
 }
 
 export function HiddenFiles() {
+  const { setClickedObject, clickedObject } = useClickedObject()
   const location = useLocation()
   const [collapse, setCollapse] = useBoolean(false)
   const transitionState = useTransition()
   const { analyzerData } = useData()
+
+  if (clickedObject && collapse) return null
   return (
     <Box>
       <BoxSubTitle>Hidden files ({analyzerData.hiddenFiles.length})</BoxSubTitle>
