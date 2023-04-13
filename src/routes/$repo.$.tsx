@@ -259,9 +259,9 @@ const Container = styled.div<{ isFullscreen: boolean }>`
   display: grid;
   transition: 0.5s;
   grid-template-areas: "left main right";
-  grid-template-columns: ${(props) =>
-    props.isFullscreen ? "0px 1fr 0px" : "var(--side-panel-width) 1fr var(--side-panel-width)"};
+  grid-template-columns: ${(props) => (props.isFullscreen ? "0px 1fr 0px" : "auto")};
   grid-template-rows: 1fr;
+  grid-gap: 0;
 
   & > ${MainRoot} {
     grid-area: main;
