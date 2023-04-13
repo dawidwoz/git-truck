@@ -6,10 +6,15 @@ import { AuthorDistEntries, AuthorDistHeader, DetailsHeading } from "./Details"
 import styled from "styled-components"
 import { useData } from "~/contexts/DataContext"
 import Accordion, { AccordionData } from "./Accordion"
-import { AccordionItemContent } from "./AccordionItem"
+import { StandartAccordionItemContent } from "./AccordionItem"
 import commitIcon from "~/assets/commit_icon.png"
 
 export type State = "idle" | "submitting" | "loading"
+
+const CommitAccordionItemContent = styled(StandartAccordionItemContent)`
+cursor: pointer;
+`
+
 interface props {
   state: State
   clickedObject: HydratedGitObject
@@ -63,7 +68,9 @@ export function CommitDistFragment(props: CommitDistFragProps) {
         {values.map((value: string) => {
           return (
             <>
-              <AccordionItemContent key={Math.random() + "--itemContentAccordion"} image={commitIcon}>{value}</AccordionItemContent>
+              <CommitAccordionItemContent key={Math.random() + "--itemContentAccordion"} image={commitIcon}>
+                {value}
+              </CommitAccordionItemContent>
             </>
           )
         })}
@@ -75,7 +82,13 @@ export function CommitDistFragment(props: CommitDistFragProps) {
   return (
     <>
       <Fragment key={new Date().toString()}>
-        <Accordion multipleOpen={true} openByDefault={true} items={items} commitCutoff={props.commitCutoff}></Accordion>
+        <Accordion
+          titleLabels={true}
+          multipleOpen={true}
+          openByDefault={true}
+          items={items}
+          itemsCutoff={props.commitCutoff}
+        ></Accordion>
       </Fragment>
     </>
   )

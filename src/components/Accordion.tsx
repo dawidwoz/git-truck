@@ -18,14 +18,16 @@ const AccordionContiner = styled.ul`
 
 function Accordion({
   items,
-  commitCutoff,
+  itemsCutoff,
   multipleOpen,
-  openByDefault
+  openByDefault,
+  titleLabels
 }: {
   items: Array<AccordionData>
-  commitCutoff: number
+  itemsCutoff: number
   multipleOpen: boolean
   openByDefault: boolean
+  titleLabels?: boolean
 }) {
   const [currentIdx, setCurrentIdx] = useState(new Array<number>())
   const [showFullList, setShowFullList] = useState(false)
@@ -36,7 +38,7 @@ function Accordion({
         )
       : setCurrentIdx((currentValue) => (currentValue.includes(idx) ? [] : [idx]))
   }
-  const cutItems = showFullList ? items : items.slice(0, commitCutoff)
+  const cutItems = showFullList ? items : items.slice(0, itemsCutoff)
   openByDefault && !multipleOpen ? setCurrentIdx([0]) : null
   return (
     <AccordionContiner>
@@ -46,14 +48,15 @@ function Accordion({
             key={Math.random() + "--accordion"}
             data={item}
             isOpen={openByDefault && multipleOpen ? !currentIdx.includes(idx) : currentIdx.includes(idx)}
+            titleLabels={titleLabels}
             btnOnClick={() => btnOnClick(idx)}
           />
           <Spacer />
         </>
       ))}
       <CommitDistOther
-        show={!showFullList && items.length > commitCutoff}
-        items={items.slice(commitCutoff)}
+        show={!showFullList && items.length > itemsCutoff}
+        items={items.slice(itemsCutoff)}
         toggle={() => setShowFullList(!showFullList)}
       />
     </AccordionContiner>

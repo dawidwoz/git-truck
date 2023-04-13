@@ -6,6 +6,7 @@
   border: 1px solid #aeaeae;
   line-height: 16px;
   padding: 6px 10px 5px;
+  overflow: hidden;
 }
 
 .dataPickerInput:focus {

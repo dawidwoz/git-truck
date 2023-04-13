@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react"
+import { Fragment, useEffect, useId, useRef, useState } from "react"
 import DatePicker from "react-datepicker"
 import { AutoTextSize } from "auto-text-size"
 import styled from "styled-components"
@@ -9,7 +9,7 @@ import { AuthorDistFragment } from "~/components/AuthorDistFragment"
 import { AuthorDistOther } from "~/components/AuthorDistOther"
 import { Spacer } from "~/components/Spacer"
 import { ExpandDown } from "~/components/Toggle"
-import { Box, BoxTitle, DetailsKey, DetailsValue, CloseButton, Button, SearchField, BaseTitle } from "~/components/util"
+import { Box, DetailsKey, DetailsValue, CloseButton, Button, SearchField, BaseTitle } from "~/components/util"
 import { useClickedObject } from "~/contexts/ClickedContext"
 import { useData } from "~/contexts/DataContext"
 import { useOptions } from "~/contexts/OptionsContext"
@@ -22,12 +22,16 @@ import { EyeClosed } from "@styled-icons/octicons"
 import { calculateCommitsForSubTree, CommitDistFragment, FileHistoryElement } from "./FileHistoryElement"
 import { MenuTab, MenuItem } from "./MenuTab"
 import { Checkbox } from "./Options"
-import { Tag, TagData } from "./Tag"
-import { CommitTabContext, useCommitTab } from "~/contexts/CommitTabContext"
+import { Tag } from "./Tag"
+import { useCommitTab } from "~/contexts/CommitTabContext"
+import { useMetrics } from "~/contexts/MetricContext"
+import { EnumSelect } from "./EnumSelect"
+import Accordion from "./Accordion"
 
 const Label = styled.label`
   font-size: 14px;
 `
+const allAuthorsLabel = "All"
 
 function OneFolderOut(path: string) {
   const index = path.lastIndexOf("/")
@@ -61,24 +65,31 @@ export function Details(props: { showUnionAuthorsModal: () => void }) {
 
 function renderCommitHistoryTab() {
   const { setClickedObject, clickedObject } = useClickedObject()
+  const { authorshipType } = useOptions()
   const { startDate, setStartDate, endDate, setEndDate } = useCommitTab()
   const [mergeCommitsEnabled, setMergeCommitsEnabled] = useState(true)
-  const [author, setAuthor] = useState<string>("")
+  const [authors, setAuthors] = useState<Set<string>>([])
   const [message, setMessage] = useState<string>("")
+  const [metricsData] = useMetrics()
   if (!clickedObject) return null
-  
   const searchFieldRef = useRef<HTMLInputElement>(null)
   const id = useId()
+  const iteratorAuthors = metricsData[authorshipType].get("TOP_CONTRIBUTOR")?.legend?.keys()
+  const allAuthors: Record<string, string> = {}
+  allAuthors[allAuthorsLabel] = ""
+  iteratorAuthors !== undefined
+    ? [...iteratorAuthors].map((item) => (allAuthors[item.toString()] = item.toString()))
+    : null
   const { analyzerData } = useData()
   const commitCutoff = 10
   let fileCommits: GitLogEntry[] = []
-  
+
   if (clickedObject.type === "blob") {
-  if (!clickedObject.commits) clickedObject.commits = []
+    if (!clickedObject.commits) clickedObject.commits = []
     fileCommits = clickedObject.commits
       .map((c) => analyzerData.commits[c])
       .filter((c) => (message ? c.message.includes(message) : true))
-      .filter((c) => (author ? c.author.includes(author) : true))
+      .filter((c) => (authors.size > 0 ? authors.has(c.author) : true))
       .filter((c) => (!mergeCommitsEnabled ? !c.message.includes("Merge pull request") : true))
       .filter((c) => (startDate ? c.time * 1000 > startDate : true))
       .filter((c) => (endDate ? c.time * 1000 < endDate : true))
@@ -87,7 +98,7 @@ function renderCommitHistoryTab() {
       fileCommits = Array.from(calculateCommitsForSubTree(clickedObject))
         .map((c) => analyzerData.commits[c])
         .filter((c) => (message ? c.message.includes(message) : true))
-        .filter((c) => (author ? c.author.includes(author) : true))
+        .filter((c) => (authors.size > 0 ? authors.has(c.author) : true))
         .filter((c) => (!mergeCommitsEnabled ? !c.message.includes("Merge pull request") : true))
         .filter((c) => (startDate ? c.time * 1000 > startDate : true))
         .filter((c) => (endDate ? c.time * 1000 < endDate : true))
@@ -108,11 +119,94 @@ function renderCommitHistoryTab() {
     ? dateInputFormat(fileCommits[0].time + oneDayInSecond)
     : undefined
 
-  const tagData = {
-    tags: [],
-    onRemove: (tag) => console.log(tag),
-  } as TagData
+  const items: Array<AccordionData> = new Array<AccordionData>()
+   items.push({
+     title: "Filters",
+     content: (
+       <>
+         <Spacer md />
+         <SearchField
+           ref={searchFieldRef}
+           onChange={(e) => setMessage(e.target.value)}
+           id={id}
+           type="search"
+           placeholder="Search for commits..."
+         />
+         <Spacer lg />
 
+         <div>
+           <EnumSelect
+             label="Add specific author"
+             enum={allAuthors}
+             showNoLabelWhenInactive={true}
+             onChange={(selectedAuthor: string) => {
+               if (selectedAuthor != allAuthorsLabel) {
+                 setAuthors(new Set([...authors]).add(selectedAuthor))
+               }
+             }}
+           />
+           <Spacer lg />
+           <Tag
+             tags={Array.from(authors)}
+             onRemove={(selectedAuthor: string) => {
+               const newAuthors = new Set([...authors])
+               newAuthors.delete(selectedAuthor)
+               setAuthors(newAuthors)
+             }}
+           ></Tag>
+           <Spacer md />
+           <div
+             style={{
+               display: "flex",
+               flexDirection: "row",
+               flexWrap: "wrap",
+             }}
+           >
+             <div style={{ display: "flex", width: "50%", overflow: "hidden" }}>From:</div>
+             <div style={{ display: "flex", width: "50%", overflow: "hidden" }}>To:</div>
+           </div>
+           <div
+             style={{
+               display: "flex",
+               flexDirection: "row",
+               flexWrap: "wrap",
+             }}
+           >
+             <div style={{ display: "flex", width: "50%", overflow: "hidden" }}>
+               <DatePicker
+                 className="dataPickerInput"
+                 selected={startValue}
+                 showTimeSelect
+                 onChange={(date) => {
+                   setStartDate(date ? date.valueOf() : 0)
+                   setEndDate(endValue ? endValue.getTime() : 0)
+                 }}
+               />
+             </div>
+             <div style={{ display: "flex", width: "50%", overflow: "hidden" }}>
+               <DatePicker
+                 className="dataPickerInput"
+                 selected={endValue}
+                 showTimeSelect
+                 onChange={(date) => {
+                   setEndDate(date ? date.valueOf() : 0)
+                   setStartDate(startValue ? startValue.getTime() : 0)
+                 }}
+               />
+             </div>
+           </div>
+           <Label>
+             <Checkbox
+               type="checkbox"
+               checked={mergeCommitsEnabled}
+               onChange={(e) => setMergeCommitsEnabled(e.target.checked)}
+             />
+             <span>Show merge commits</span>
+           </Label>
+         </div>
+       </>
+     ),
+   })
   return (
     <>
       <div>
@@ -120,57 +214,13 @@ function renderCommitHistoryTab() {
           <BaseTitle title={clickedObject.name}>{clickedObject.name}</BaseTitle>
         </AutoTextSize>
       </div>
-      <Spacer xl />
-      <SearchField
-        ref={searchFieldRef}
-        onChange={(e) => setMessage(e.target.value)}
-        id={id}
-        type="search"
-        placeholder="Search for commits..."
-      />
-      <Spacer lg />
-      <CommitDistFragment show={true} items={fileCommits} commitCutoff={commitCutoff} />
+      <Fragment key={new Date().toString()}>
+        <Accordion multipleOpen={true} openByDefault={true} items={items} itemsCutoff={5}></Accordion>
+      </Fragment>
       <hr />
-      <BoxTitle>Filters</BoxTitle>
-      <Label>
-        <Checkbox
-          type="checkbox"
-          checked={mergeCommitsEnabled}
-          onChange={(e) => setMergeCommitsEnabled(e.target.checked)}
-        />
-        <span>Show merge commits</span>
-      </Label>
-      <div>
-        <b>Author:</b>
-        <SearchField onChange={(e) => setAuthor(e.target.value)} placeholder="Add author..." />
-        <Spacer lg />
-        <Tag tags={tagData.tags} onRemove={tagData.onRemove}></Tag>
-        <Spacer lg />
-        <b>Dates:</b>
-        <div>
-          From:
-          <DatePicker
-            className="dataPickerInput"
-            selected={startValue}
-            showTimeSelect
-            onChange={(date) => {
-              setStartDate(date ? date.valueOf() : 0)
-              setEndDate(endValue ? endValue.getTime() : 0)
-            }}
-          />
-          <Spacer md />
-          To:
-          <DatePicker
-            className="dataPickerInput"
-            selected={endValue}
-            showTimeSelect
-            onChange={(date) => {
-              setEndDate(date ? date.valueOf() : 0)
-              setStartDate(startValue ? startValue.getTime() : 0)
-            }}
-          />
-        </div>
-      </div>
+      <Spacer md />
+      <CommitDistFragment show={true} items={fileCommits} commitCutoff={commitCutoff} />
+      <Spacer md />
     </>
   )
 }

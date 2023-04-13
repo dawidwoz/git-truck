@@ -13,12 +13,12 @@ const AccordionItemTitle = styled.h2`
   margin: 0;
 `
 
-const AccordionItemButton = styled.div<{ rotation: number }>`
+const AccordionItemButton = styled.div<{ rotation: number; titleLabels?: boolean }>`
   display: flex;
   align-items: center;
   width: 100%;
   border: 0;
-  font-size: 14px;
+  font-size: ${({ titleLabels }) => (!titleLabels ? "20px" : "14px")};
   font-weight: 400;
   cursor: pointer;
   user-select: none;
@@ -44,13 +44,23 @@ const AccordionItemContainer = styled.ul`
   font-size: 14px;
 `
 
-export const AccordionItemContent = styled.li<{ image: string }>`
+export const StandartAccordionItemContent = styled.li<{ image: string }>`
   list-style-image: url(${({ image }) => image});
   margin: 5px;
   margin-left: 15px;
 `
 
-function AccordionItem({ data, isOpen, btnOnClick }: { data: AccordionData; isOpen: boolean; btnOnClick: () => void }) {
+function AccordionItem({
+  data,
+  isOpen,
+  btnOnClick,
+  titleLabels
+}: {
+  data: AccordionData
+  isOpen: boolean
+  btnOnClick: () => void
+  titleLabels?: boolean
+}) {
   const [height, setHeight] = useState("")
 
   useEffect(() => {
@@ -64,16 +74,12 @@ function AccordionItem({ data, isOpen, btnOnClick }: { data: AccordionData; isOp
   return (
     <AccordionItemElement>
       <AccordionItemTitle>
-        <AccordionItemButton rotation={isOpen ? 180 : 0} onClick={btnOnClick}>
+        <AccordionItemButton titleLabels={titleLabels} rotation={isOpen ? 180 : 0} onClick={btnOnClick}>
           {data.title}
         </AccordionItemButton>
       </AccordionItemTitle>
       <AccordionItemContainer style={{ height }}>
-        {isOpen && (
-          <div style={{overflow: "hidden"}}>
-            {data.content}
-          </div>
-        )}
+        {isOpen && <div style={{ overflow: "hidden" }}>{data.content}</div>}
       </AccordionItemContainer>
     </AccordionItemElement>
   )

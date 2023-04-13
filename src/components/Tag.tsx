@@ -6,14 +6,20 @@ export type TagData = {
   onRemove: (tag: string) => void
 }
 
-const TagContainer = styled.div`
+const Tags = styled.div`
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
+`
+
+const TagContainer = styled.div`
+  display: flex;
   justify-content: center;
   border-radius: 15%;
   width: fit-content;
   padding: 5px;
-  background-color: #A9A9A9;
+  margin: 5px;
+  background-color: var(--button-hovered-bg);
 `
 
 const TagContent = styled.span`
@@ -30,12 +36,14 @@ CloseButton.defaultProps = { children: <CloseIcon /> }
 export const Tag = (props: TagData) => {
   return (
     <>
+    <Tags>
       {props.tags.map((item, idx) => (
         <TagContainer key={idx + Math.random() + "--tags"}>
           <TagContent>{item}</TagContent>
           <CloseButton onClick={() => props.onRemove(item)}></CloseButton>
         </TagContainer>
       ))}
+      </Tags>
     </>
   )
 }
