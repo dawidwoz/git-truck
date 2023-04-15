@@ -18,6 +18,10 @@ const StyledBox = styled(Box)`
   bottom: 0;
 `
 
+const PointerMouse = styled.span`
+  cursor: pointer;
+`
+
 export type LegendType = "POINT" | "GRADIENT" | "SEGMENTS"
 
 export function Legend(props: { showUnionAuthorsModal: () => void }) {
@@ -49,7 +53,9 @@ export function Legend(props: { showUnionAuthorsModal: () => void }) {
       <CloseButton onClick={() => setCollapse(!collapse)}>
         {collapse ? <ArrowDropUp display="inline-block" height="2em" /> : <Close display="inline-block" height="1em" />}
       </CloseButton>
-      <BoxSubTitle>{collapse ? "See legend" : Metric[metricType]}</BoxSubTitle>
+      <BoxSubTitle>
+        {collapse ? <PointerMouse onClick={() => setCollapse(!collapse)}>See legend</PointerMouse> : Metric[metricType]}
+      </BoxSubTitle>
       {!collapse ? (
         <>
           <Spacer />
