@@ -12,7 +12,7 @@ export const MainRoot = styled.main`
   overflow: hidden;
   resize: both;
   min-width: 100px;
-  width: calc(100vw - 2 * var(--side-panel-width));
+  width: calc(100vw - 2.5 * var(--side-panel-width));
   height: 100%;
 `
 

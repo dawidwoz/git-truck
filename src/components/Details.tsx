@@ -15,7 +15,7 @@ export function Details(props: { showUnionAuthorsModal: () => void }) {
     content: renderGeneralTab(props.showUnionAuthorsModal),
   } as MenuItem)
   items.push({
-    title: "Commits details",
+    title: "Commits",
     content: renderCommitHistoryTab(),
   } as MenuItem)
   return (
