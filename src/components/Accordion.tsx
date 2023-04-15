@@ -21,13 +21,17 @@ function Accordion({
   itemsCutoff,
   multipleOpen,
   openByDefault,
-  titleLabels
+  titleLabels,
+  currentState,
+  actionClickLabels,
 }: {
   items: Array<AccordionData>
   itemsCutoff: number
   multipleOpen: boolean
   openByDefault: boolean
   titleLabels?: boolean
+  currentState?: Array<boolean>
+  actionClickLabels?: (id: number) => void
 }) {
   const [currentIdx, setCurrentIdx] = useState(new Array<number>())
   const [showFullList, setShowFullList] = useState(false)
@@ -47,9 +51,18 @@ function Accordion({
           <AccordionItem
             key={Math.random() + "--accordion"}
             data={item}
-            isOpen={openByDefault && multipleOpen ? !currentIdx.includes(idx) : currentIdx.includes(idx)}
+            isOpen={
+              currentState && currentState[idx]
+                ? currentState[idx]
+                : openByDefault && multipleOpen
+                ? !currentIdx.includes(idx)
+                : currentIdx.includes(idx)
+            }
             titleLabels={titleLabels}
-            btnOnClick={() => btnOnClick(idx)}
+            btnOnClick={() => {
+              btnOnClick(idx)
+              actionClickLabels ? actionClickLabels(idx) : null
+            }}
           />
           <Spacer />
         </>

@@ -119,7 +119,7 @@ function RepositoryEntry({ repo }: { repo: SerializeFrom<Repository> }): JSX.Ele
 }
 
 const Wrapper = styled.div`
-  width: calc(100vw - 2 * var(--side-panel-width));
+  width: calc(100vw - 2.5 * var(--side-panel-width));
   margin: auto;
   padding: var(--unit);
   min-height: 100vh;

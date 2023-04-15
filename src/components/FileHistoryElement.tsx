@@ -10,9 +10,10 @@ import { StandartAccordionItemContent } from "./AccordionItem"
 import commitIcon from "~/assets/commit_icon.png"
 
 export type State = "idle" | "submitting" | "loading"
+export type SortCommitsMethods = "date" | "author"
 
 const CommitAccordionItemContent = styled(StandartAccordionItemContent)`
-cursor: pointer;
+  cursor: pointer;
 `
 
 interface props {
@@ -43,39 +44,32 @@ interface CommitDistFragProps {
   items: GitLogEntry[]
   show: boolean
   commitCutoff: number
+  sortBy?: SortCommitsMethods
 }
 
 export function CommitDistFragment(props: CommitDistFragProps) {
   if (!props.show || !props.items) return null
+  const sortMethod: SortCommitsMethods = props.sortBy !== undefined ? props.sortBy : "date"
 
-  const cleanGroupByDateItems: { [key: string]: string[] } = {};
-  props.items.map((commit) => {
-    const date: string = dateFormatLong(commit.time);
-    if (!cleanGroupByDateItems[date]) {
-      cleanGroupByDateItems[date] = []
-    }
-    if (!cleanGroupByDateItems[date].includes(commit.message)) {
-      cleanGroupByDateItems[date].push(commit.message)
-    }
-  })
+  const cleanGroupItems: { [key: string]: string[] } = sortCommits(props.items, sortMethod)
 
-  const items: Array<AccordionData> = new Array<AccordionData>
-  for (const [key, values] of Object.entries(cleanGroupByDateItems)) {
+  const items: Array<AccordionData> = new Array<AccordionData>()
+  for (const [key, values] of Object.entries(cleanGroupItems)) {
     items.push({
       title: key,
       content: (
         <>
-        {values.map((value: string) => {
-          return (
-            <>
-              <CommitAccordionItemContent key={Math.random() + "--itemContentAccordion"} image={commitIcon}>
-                {value}
-              </CommitAccordionItemContent>
-            </>
-          )
-        })}
+          {values.map((value: string) => {
+            return (
+              <>
+                <CommitAccordionItemContent key={Math.random() + "--itemContentAccordion"} image={commitIcon}>
+                  {value}
+                </CommitAccordionItemContent>
+              </>
+            )
+          })}
         </>
-      )
+      ),
     })
   }
 
@@ -92,6 +86,35 @@ export function CommitDistFragment(props: CommitDistFragProps) {
       </Fragment>
     </>
   )
+}
+
+function sortCommits(items: GitLogEntry[], method: SortCommitsMethods): { [key: string]: string[] } {
+  const cleanGroupItems: { [key: string]: string[] } = {}
+  switch (method) {
+    case "author":
+       items.map((commit) => {
+        const author: string = commit.author
+         if (!cleanGroupItems[author]) {
+           cleanGroupItems[author] = []
+         }
+         if (!cleanGroupItems[author].includes(commit.message)) {
+           cleanGroupItems[author].push(commit.message)
+         }
+       })
+      break
+    case "date":
+    default:
+      items.map((commit) => {
+        const date: string = dateFormatLong(commit.time)
+        if (!cleanGroupItems[date]) {
+          cleanGroupItems[date] = []
+        }
+        if (!cleanGroupItems[date].includes(commit.message)) {
+          cleanGroupItems[date].push(commit.message)
+        }
+      })
+  }
+  return cleanGroupItems
 }
 
 function CommitHistory(props: { commits: GitLogEntry[] | undefined }) {

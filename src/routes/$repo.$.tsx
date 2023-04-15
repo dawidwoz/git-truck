@@ -21,7 +21,7 @@ import { Main, MainRoot } from "~/components/Main"
 import { Options } from "~/components/Options"
 import { Providers } from "~/components/Providers"
 import SearchBar from "~/components/SearchBar"
-import { SidePanel, SidePanelRoot } from "~/components/SidePanel"
+import { SidePanelLeft, SidePanelLeftElement, SidePanelRight, SidePanelRightElement } from "~/components/SidePanel"
 import { Spacer } from "~/components/Spacer"
 import { UnionAuthorsModal } from "~/components/UnionAuthorsModal"
 import {
@@ -226,15 +226,15 @@ export default function Repo() {
   return (
     <Providers data={data}>
       <Container isFullscreen={isFullscreen}>
-        <SidePanel>
+        <SidePanelLeft>
           <GlobalInfo />
           <Feedback />
           <Options />
           <SearchBar />
           <Spacer />
-        </SidePanel>
+        </SidePanelLeft>
         {typeof document !== "undefined" ? <Main fullscreenState={[isFullscreen, setIsFullscreen]} /> : <div />}
-        <SidePanel>
+        <SidePanelRight>
           {gitTruckInfo.latestVersion && semverCompare(gitTruckInfo.latestVersion, gitTruckInfo.version) === 1 ? (
             <UpdateNotifier />
           ) : null}
@@ -242,7 +242,7 @@ export default function Repo() {
           <Details showUnionAuthorsModal={showUnionAuthorsModal} />
           <Grower />
           <Legend showUnionAuthorsModal={showUnionAuthorsModal} />
-        </SidePanel>
+        </SidePanelRight>
       </Container>
       <UnionAuthorsModal
         visible={unionAuthorsModalOpen}
@@ -267,11 +267,11 @@ const Container = styled.div<{ isFullscreen: boolean }>`
     grid-area: main;
   }
 
-  & > ${SidePanelRoot}:first-of-type() {
+  & > ${SidePanelLeftElement}:first-of-type() {
     grid-area: left;
   }
 
-  & > ${SidePanelRoot}:last-of-type() {
+  & > ${SidePanelRightElement}:last-of-type() {
     grid-area: right;
   }
 
