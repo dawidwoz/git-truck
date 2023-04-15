@@ -1,3 +1,8 @@
 .container {
   position: relative;
 }
+
+/* When the button is used as a switch, we use it to indicate which option is active */
+.active-button {
+  background-color: hsl(216, 0%, 75%) !important;
+}

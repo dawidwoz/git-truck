@@ -2,7 +2,7 @@ import { GitLogEntry, HydratedGitObject, HydratedGitTreeObject } from "~/analyze
 import { Fragment } from "react"
 import { dateFormatLong } from "~/util"
 import { Spacer } from "./Spacer"
-import { AuthorDistEntries, AuthorDistHeader, DetailsHeading } from "./Details"
+import { AuthorDistEntries, AuthorDistHeader, DetailsHeading } from "./GeneralTab"
 import styled from "styled-components"
 import { useData } from "~/contexts/DataContext"
 import Accordion, { AccordionData } from "./Accordion"
