@@ -18,8 +18,8 @@ const AccordionItemButton = styled.div<{ rotation: number; titleLabels?: boolean
   align-items: center;
   width: 100%;
   border: 0;
-  font-size: ${({ titleLabels }) => (!titleLabels ? "20px" : "14px")};
-  font-weight: 400;
+  font-size: ${({ titleLabels }) => (!titleLabels ? "16px" : "14px")};
+  font-weight: ${({ titleLabels }) => (!titleLabels ? "500" : "400")};
   cursor: pointer;
   user-select: none;
 
