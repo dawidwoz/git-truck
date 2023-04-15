@@ -79,7 +79,7 @@ function AccordionItem({
         </AccordionItemButton>
       </AccordionItemTitle>
       <AccordionItemContainer style={{ height }}>
-        {isOpen && <div style={{ overflow: "hidden" }}>{data.content}</div>}
+        {isOpen && <div>{data.content}</div>}
       </AccordionItemContainer>
     </AccordionItemElement>
   )

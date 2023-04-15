@@ -4,6 +4,7 @@ import { Close as CloseIcon } from "@styled-icons/material"
 export type TagData = {
   tags: Array<string>
   onRemove: (tag: string) => void
+  noClosableValues?: Array<string>
 }
 
 const Tags = styled.div`
@@ -40,7 +41,9 @@ export const Tag = (props: TagData) => {
       {props.tags.map((item, idx) => (
         <TagContainer key={idx + Math.random() + "--tags"}>
           <TagContent>{item}</TagContent>
-          <CloseButton onClick={() => props.onRemove(item)}></CloseButton>
+          { !props.noClosableValues?.includes(item) &&
+            <CloseButton onClick={() => props.onRemove(item)}></CloseButton>
+          }
         </TagContainer>
       ))}
       </Tags>
