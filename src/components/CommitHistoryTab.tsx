@@ -83,6 +83,7 @@ export function renderCommitHistoryTab() {
           <BaseTitle title={clickedObject.name}>{clickedObject.name}</BaseTitle>
         </AutoTextSize>
       </div>
+      <Spacer xl />
       <Fragment key={new Date().toString()}>
         <Accordion
           multipleOpen={true}
@@ -216,12 +217,25 @@ function createSorting(
   return (
     <>
       <EnumSelect
-        label="Sort by:"
+        label=""
         enum={sortOptions}
         showNoLabelWhenInactive={false}
-        onChange={(selectedOption: string) =>
-          selectedOption == "Date" ? setSortMethods("date") : setSortMethods("author")
-        }
+        onChange={(selectedOption: string) => {
+          // Dirty trick to display the right option first
+          if (selectedOption == "Date") {
+            setSortMethods("date")
+            sortOptions = {
+              Date: "Date",
+              Author: "Author",
+            }
+          } else {
+            setSortMethods("author")
+            sortOptions = {
+              Author: "Author",
+              Date: "Date",
+            }
+          }
+        }}
       />
       <Spacer md />
       <RowSpaceFlex>
@@ -292,7 +306,7 @@ function authorFilterLogic(c: GitLogEntry, includeAuthors: boolean, authors: Set
   return includeAuthors ? authors.has(c.author) : !authors.has(c.author)
 }
 
-const sortOptions: Record<string, string> = {
+let sortOptions: Record<string, string> = {
   Date: "Date",
   Author: "Author",
 }
