@@ -10,12 +10,14 @@ import { useData } from "~/contexts/DataContext"
 import { useOptions } from "~/contexts/OptionsContext"
 import { dateInputFormat } from "~/util"
 import { calculateCommitsForSubTree, CommitDistFragment, SortCommitsMethods } from "./FileHistoryElement"
+import { SingleCommitView } from "./SingleCommitView"
 import { Checkbox } from "./Options"
 import { Tag } from "./Tag"
 import { useCommitTab } from "~/contexts/CommitTabContext"
 import { useMetrics } from "~/contexts/MetricContext"
 import { EnumSelect } from "./EnumSelect"
 import Accordion, { AccordionData } from "./Accordion"
+import { RowWrapFlex } from "./pure/Flex"
 
 const commitCutoff = 10
 
@@ -26,6 +28,7 @@ export function renderCommitHistoryTab() {
   const [includeAuthors, setIncludeAuthors] = useState(true)
   const [authors, setAuthors] = useState<Set<string>>(new Set([]))
   const [sortMethods, setSortMethods] = useState<SortCommitsMethods>("date")
+  const [selectedCommit, setSelectedCommit] = useState<GitLogEntry | undefined>(undefined)
   const [message, setMessage] = useState<string>("")
   const [openFilters, setOpenFilters] = useState(false)
   const [openSorting, setOpenSorting] = useState(false)
@@ -78,32 +81,41 @@ export function renderCommitHistoryTab() {
 
   return (
     <>
-      <div>
-        <AutoTextSize maxFontSizePx={26} minFontSizePx={8}>
-          <BaseTitle title={clickedObject.name}>{clickedObject.name}</BaseTitle>
-        </AutoTextSize>
-      </div>
-      <Spacer xl />
-      <Fragment key={new Date().toString()}>
-        <Accordion
-          multipleOpen={true}
-          openByDefault={false}
-          currentState={[openFilters, openSorting]}
-          actionClickLabels={(idx) => (idx == 0 ? setOpenFilters(!openFilters) : setOpenSorting(!openSorting))}
-          items={items}
-          itemsCutoff={5}
-        ></Accordion>
-      </Fragment>
-      <Spacer sm />
-      <hr />
-      <Spacer sm />
-      <CommitDistFragment
-        show={true}
-        sortBy={sortMethods}
-        items={isAscendingOrder ? fileCommits : fileCommits.reverse()}
-        commitCutoff={commitCutoff}
-      />
-      <Spacer md />
+      {!selectedCommit ? (
+        <>
+          <div>
+            <AutoTextSize maxFontSizePx={26} minFontSizePx={8}>
+              <BaseTitle title={clickedObject.name}>{clickedObject.name}</BaseTitle>
+            </AutoTextSize>
+          </div>
+          <Spacer xl />
+          <Fragment key={new Date().toString()}>
+            <Accordion
+              multipleOpen={true}
+              openByDefault={false}
+              currentState={[openFilters, openSorting]}
+              actionClickLabels={(idx) => (idx == 0 ? setOpenFilters(!openFilters) : setOpenSorting(!openSorting))}
+              items={items}
+              itemsCutoff={5}
+            ></Accordion>
+          </Fragment>
+          <Spacer sm />
+          <Spacer xl />
+          <Spacer sm />
+          <CommitDistFragment
+            show={true}
+            sortBy={sortMethods}
+            handleOnClick={(commit: GitLogEntry) => setSelectedCommit(commit)}
+            items={isAscendingOrder ? fileCommits : fileCommits.reverse()}
+            commitCutoff={commitCutoff}
+          />
+          <Spacer md />
+        </>
+      ) : (
+        <>
+          <SingleCommitView commit={selectedCommit} onClose={() => setSelectedCommit(undefined)} />
+        </>
+      )}
     </>
   )
 }
@@ -319,11 +331,7 @@ const RowSpaceFlex = styled.div`
   justify-content: space-evenly;
 `
 
-const RowWrapFlex = styled.div`
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-`
+
 
 const HalfScreenFlex = styled.div`
   display: flex;

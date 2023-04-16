@@ -162,7 +162,7 @@ export const AuthorDistHeader = styled.div`
     }
   `
 
-const DetailsEntries = styled.div`
+export const DetailsEntries = styled.div`
   display: grid;
   grid-template-columns: auto 1fr;
   gap: var(--unit) calc(var(--unit) * 3);

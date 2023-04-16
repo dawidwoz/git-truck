@@ -12,8 +12,8 @@ import commitIcon from "~/assets/commit_icon.png"
 export type State = "idle" | "submitting" | "loading"
 export type SortCommitsMethods = "date" | "author"
 
-const CommitAccordionItemContent = styled(StandartAccordionItemContent)`
-  cursor: pointer;
+const CommitAccordionItemContent = styled(StandartAccordionItemContent)<{ hasClickableAction?: boolean }>`
+  cursor: ${({ hasClickableAction }) => (hasClickableAction ? "pointer" : "auto")};
 `
 
 interface props {
@@ -45,13 +45,14 @@ interface CommitDistFragProps {
   show: boolean
   commitCutoff: number
   sortBy?: SortCommitsMethods
+  handleOnClick?: (commit: GitLogEntry) => void
 }
 
 export function CommitDistFragment(props: CommitDistFragProps) {
   if (!props.show || !props.items) return null
   const sortMethod: SortCommitsMethods = props.sortBy !== undefined ? props.sortBy : "date"
 
-  const cleanGroupItems: { [key: string]: string[] } = sortCommits(props.items, sortMethod)
+  const cleanGroupItems: { [key: string]: GitLogEntry[] } = sortCommits(props.items, sortMethod)
 
   const items: Array<AccordionData> = new Array<AccordionData>()
   for (const [key, values] of Object.entries(cleanGroupItems)) {
@@ -59,11 +60,16 @@ export function CommitDistFragment(props: CommitDistFragProps) {
       title: key,
       content: (
         <>
-          {values.map((value: string) => {
+          {values.map((value: GitLogEntry) => {
             return (
               <>
-                <CommitAccordionItemContent key={Math.random() + "--itemContentAccordion"} image={commitIcon}>
-                  {value}
+                <CommitAccordionItemContent
+                  hasClickableAction={!!props.handleOnClick}
+                  onClick={() => (props.handleOnClick ? props.handleOnClick(value) : null)}
+                  key={Math.random() + "--itemContentAccordion"}
+                  image={commitIcon}
+                >
+                  {value.message}
                 </CommitAccordionItemContent>
               </>
             )
@@ -88,19 +94,17 @@ export function CommitDistFragment(props: CommitDistFragProps) {
   )
 }
 
-function sortCommits(items: GitLogEntry[], method: SortCommitsMethods): { [key: string]: string[] } {
-  const cleanGroupItems: { [key: string]: string[] } = {}
+function sortCommits(items: GitLogEntry[], method: SortCommitsMethods): { [key: string]: GitLogEntry[] } {
+  const cleanGroupItems: { [key: string]: GitLogEntry[] } = {}
   switch (method) {
     case "author":
-       items.map((commit) => {
+      items.map((commit) => {
         const author: string = commit.author
-         if (!cleanGroupItems[author]) {
-           cleanGroupItems[author] = []
-         }
-         if (!cleanGroupItems[author].includes(commit.message)) {
-           cleanGroupItems[author].push(commit.message)
-         }
-       })
+        if (!cleanGroupItems[author]) {
+          cleanGroupItems[author] = []
+        }
+        cleanGroupItems[author].push(commit)
+      })
       break
     case "date":
     default:
@@ -109,9 +113,7 @@ function sortCommits(items: GitLogEntry[], method: SortCommitsMethods): { [key: 
         if (!cleanGroupItems[date]) {
           cleanGroupItems[date] = []
         }
-        if (!cleanGroupItems[date].includes(commit.message)) {
-          cleanGroupItems[date].push(commit.message)
-        }
+        cleanGroupItems[date].push(commit)
       })
   }
   return cleanGroupItems
