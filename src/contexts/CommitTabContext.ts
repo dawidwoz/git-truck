@@ -2,9 +2,9 @@ import { createContext, useContext } from "react"
 
 export interface CommitTab {
   startDate: number | null
-  setStartDate: (newDate: number) => void
+  setStartDate: (newDate: number | null) => void
   endDate: number | null
-  setEndDate: (newDate: number) => void
+  setEndDate: (newDate: number | null) => void
 }
 
 export const CommitTabContext = createContext<CommitTab | null>(null)

@@ -38,12 +38,12 @@ export function renderCommitHistoryTab() {
 
   const fileCommits: GitLogEntry[] = getAllCommits(
     clickedObject,
-    message,
     includeAuthors,
     mergeCommitsEnabled,
     authors,
     startDate,
-    endDate
+    endDate,
+    message
   )
 
   const startValue = startDate
@@ -63,6 +63,7 @@ export function renderCommitHistoryTab() {
     content: createFilters(
       authors,
       setAuthors,
+      message,
       setMessage,
       includeAuthors,
       setIncludeAuthors,
@@ -123,6 +124,7 @@ export function renderCommitHistoryTab() {
 function createFilters(
   authors: Set<string>,
   setAuthors: (t: Set<string>) => void,
+  message: string,
   setMessage: (t: string) => void,
   includeAuthors: boolean,
   setIncludeAuthors: (t: boolean) => void,
@@ -131,7 +133,7 @@ function createFilters(
   setStartDate: (t: number) => void,
   setEndDate: (t: number) => void,
   endValue?: Date,
-  startValue?: Date
+  startValue?: Date,
 ): React.ReactNode {
   const searchFieldRef = useRef<HTMLInputElement>(null)
   const id = useId()
@@ -143,9 +145,11 @@ function createFilters(
       <SearchField
         ref={searchFieldRef}
         onChange={(e) => setMessage(e.target.value)}
+        value={message}
         id={id}
         type="search"
         placeholder="Search for commits..."
+        autoFocus={message != ""}
       />
       <Spacer lg />
 
@@ -277,12 +281,12 @@ function getAllAuthors(): Record<string, string> {
 
 function getAllCommits(
   clickedObject: HydratedGitObject,
-  message: string,
   includeAuthors: boolean,
   mergeCommitsEnabled: boolean,
   authors: Set<string>,
   startDate: number | null,
-  endDate: number | null
+  endDate: number | null,
+  message: string
 ): GitLogEntry[] {
   const { analyzerData } = useData()
 
@@ -303,7 +307,7 @@ function getAllCommits(
 
   fileCommits = rowCommits
     .map((c) => analyzerData.commits[c])
-    .filter((c) => (message ? c.message.includes(message) : true))
+    .filter((c) => (message ? c.message.toLowerCase().includes(message.toLowerCase()) : true))
     .filter((c) => authorFilterLogic(c, includeAuthors, authors))
     .filter((c) => (!mergeCommitsEnabled ? !c.message.includes("Merge pull request") : true))
     .filter((c) => (startDate ? c.time * 1000 > startDate : true))
@@ -330,8 +334,6 @@ const RowSpaceFlex = styled.div`
   flex-direction: row;
   justify-content: space-evenly;
 `
-
-
 
 const HalfScreenFlex = styled.div`
   display: flex;
