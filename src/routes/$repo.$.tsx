@@ -46,6 +46,7 @@ export interface RepoData {
     version: string
     latestVersion: string | null
   }
+  editedFilesSingleCommit: string[]
 }
 
 export const loader = async ({ params }: LoaderArgs) => {
@@ -80,6 +81,7 @@ export const loader = async ({ params }: LoaderArgs) => {
     repo,
     gitTruckInfo: await getGitTruckInfo(),
     truckConfig,
+    editedFilesSingleCommit: []
   })
 }
 
@@ -87,20 +89,35 @@ export const action: ActionFunction = async ({ request, params }) => {
   if (!params["repo"]) {
     throw Error("This can never happen, since this route is only called if a repo exists in the URL")
   }
+
   const formData = await request.formData()
+  const formName = formData.get("formName")
+
+   const [args] = await getTruckConfigWithArgs(params["repo"])
+   const path = resolve(args.path, params["repo"])
+
   const refresh = formData.get("refresh")
   const unignore = formData.get("unignore")
   const ignore = formData.get("ignore")
   const fileToOpen = formData.get("open")
   const unionedAuthors = formData.get("unionedAuthors")
+  const commitHash = formData.get("commitHash")
 
   if (refresh) {
     invalidateCache = true
     return null
   }
-
-  const [args] = await getTruckConfigWithArgs(params["repo"])
-  const path = resolve(args.path, params["repo"])
+  
+  if (commitHash && typeof commitHash === "string") {
+      if (!commitHash) return null
+       await updateTruckConfig(path, (prevConfig) => {
+         return {
+           ...prevConfig,
+           commitHash: commitHash.toString(),
+         }
+       })
+       return null
+  }
 
   if (ignore && typeof ignore === "string") {
     await updateTruckConfig(path, (prevConfig) => {

@@ -21,10 +21,10 @@ export function getDefaultCommitTab(): CommitTab {
   return {
     startDate: null,
     endDate: null,
-    setStartDate: (newDate: number) => {
+    setStartDate: (newDate: number | null) => {
       throw new Error("No chartTypeSetter provided")
     },
-    setEndDate: (newDate: number) => {
+    setEndDate: (newDate: number | null) => {
       throw new Error("No chartTypeSetter provided")
     },
   }

@@ -31,13 +31,13 @@ export function Providers({ children, data }: ProvidersProps) {
     () => ({
       ...getDefaultCommitTab(),
       ...commitTab,
-      setStartDate: (newDate: number) => {
+      setStartDate: (newDate: number | null) => {
         setCommitTab((prevValue) => ({
           ...(prevValue ?? getDefaultCommitTab()),
           startDate: newDate,
         }))
       },
-      setEndDate: (newDate: number) => {
+      setEndDate: (newDate: number | null) => {
         setCommitTab((prevValue) => ({
           ...(prevValue ?? getDefaultCommitTab()),
           endDate: newDate,
