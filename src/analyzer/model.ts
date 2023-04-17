@@ -26,6 +26,7 @@ export interface TruckUserConfig {
   unionedAuthors?: string[][]
   hiddenFiles?: string[]
   invalidateCache?: boolean
+  commitHash?: string
 }
 
 export interface TruckConfig {

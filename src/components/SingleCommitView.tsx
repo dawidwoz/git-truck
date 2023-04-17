@@ -1,11 +1,14 @@
 import { GitLogEntry } from "~/analyzer/model"
-import { BaseTitle, CloseButton, DetailsKey, DetailsValue } from "~/components/util"
+import { BaseTitle, Button, CloseButton, DetailsKey, DetailsValue } from "~/components/util"
+import { useSubmit } from "@remix-run/react"
+import { useData } from "~/contexts/DataContext"
 import { Spacer } from "~/components/Spacer"
 import styled from "styled-components"
 import { ArrowBack as ArrowBackIcon } from "@styled-icons/material"
 import { dateTimeFormatLong } from "~/util"
 import { DetailsEntries } from "./GeneralTab"
 import { RowWrapFlex } from "./pure/Flex"
+import { getPathFromRepoAndHead } from "~/util"
 
 interface SingleCommitViewProps {
   onClose: () => void
@@ -21,6 +24,19 @@ const BackArrow = styled(CloseButton)`
 `
 
 export function SingleCommitView(props: SingleCommitViewProps) {
+  const { repo } = useData()
+  const submit = useSubmit()
+
+  function sendRequest(commitHash: string) {
+    const form = new FormData()
+    form.append("commitHash", commitHash)
+
+    submit(form, {
+      action: `/${getPathFromRepoAndHead(repo.name, repo.currentHead)}`,
+      method: "post",
+    })
+  }
+
   return (
     <>
       <RowWrapFlex>
@@ -44,6 +60,9 @@ export function SingleCommitView(props: SingleCommitViewProps) {
         <DetailsKey grow>Created by</DetailsKey>
         <DetailsValue>{props.commit.author}</DetailsValue>
       </DetailsEntries>
+      {/* <Button onClick={() => sendRequest(props.commit.hash)}>
+        Show edited files
+      </Button> */}
     </>
   )
 }
