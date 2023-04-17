@@ -36,7 +36,7 @@ export function SingleCommitView(props: SingleCommitViewProps) {
         <DetailsKey grow>Message</DetailsKey>
         <DetailsValue>{props.commit.message}</DetailsValue>
         <DetailsKey grow>Description</DetailsKey>
-        <DetailsValue>{props.commit.message}</DetailsValue>
+        <DetailsValue>{props.commit.body}</DetailsValue>
         <DetailsKey grow>Hash</DetailsKey>
         <DetailsValue>{props.commit.hash}</DetailsValue>
         <DetailsKey grow>Created at</DetailsKey>
