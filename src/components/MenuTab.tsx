@@ -4,6 +4,7 @@ import styled from "styled-components"
 export type MenuItem = {
   title: string
   content: ReactNode
+  onChange?: (index: number) => void
 }
 
 const TabContainer = styled.div`
@@ -35,9 +36,10 @@ const TabContent = styled.div`
   border-top: none;
 `
 
-export const MenuTab = ({ items }: { items: Array<MenuItem> }) => {
+export const MenuTab = ({ items, isSelected }: { items: Array<MenuItem>, isSelected?: number }) => {
   const [currentIdx, setCurrentIdx] = useState(0)
   const equalSplitValue = 100 / items.length + "%"
+  const selectedIdx = isSelected ? isSelected : currentIdx
   return (
     <>
       <TabContainer>
@@ -46,11 +48,12 @@ export const MenuTab = ({ items }: { items: Array<MenuItem> }) => {
             <TabLink
               key={Math.random() + "--tab"}
               style={
-                currentIdx == idx
+                selectedIdx == idx
                   ? { fontWeight: "bold", textDecoration: "underline", width: equalSplitValue }
                   : { width: equalSplitValue }
               }
               onClick={() => {
+                item.onChange ? item.onChange(idx) : null
                 setCurrentIdx((currentValue) => (currentValue !== idx ? idx : currentValue))
               }}
             >
@@ -60,7 +63,7 @@ export const MenuTab = ({ items }: { items: Array<MenuItem> }) => {
         ))}
       </TabContainer>
       {items.map((item, idx) => (
-        <>{idx == currentIdx && <TabContent>{item.content}</TabContent>}</>
+        <>{idx == selectedIdx && <TabContent>{item.content}</TabContent>}</>
       ))}
     </>
   )

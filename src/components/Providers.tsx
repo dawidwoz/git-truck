@@ -66,6 +66,11 @@ export function Providers({ children, data }: ProvidersProps) {
           ...(prevOptions ?? getDefaultOptions()),
           authorshipType,
         })),
+      setDepthType: (depthType: DepthType) =>
+        setOptions((prevOptions) => ({
+          ...(prevOptions ?? getDefaultOptions()),
+          depthType,
+        })),
       setHoveredBlob: (blob: HydratedGitBlobObject | null) =>
         setOptions((prevOptions) => ({
           ...(prevOptions ?? getDefaultOptions()),

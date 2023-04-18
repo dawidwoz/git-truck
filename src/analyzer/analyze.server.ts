@@ -190,7 +190,6 @@ export async function updateTruckConfig(repoDir: string, updaterFn: (tc: TruckUs
     if (configFileContents) currentConfig = JSON.parse(configFileContents)
   } catch (e) {}
   const updatedConfig = updaterFn(currentConfig)
-  console.log(updatedConfig)
   await fs.writeFile(truckConfigPath, JSON.stringify(updatedConfig, null, 2))
 }
 
