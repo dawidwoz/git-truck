@@ -26,6 +26,7 @@ import { useOptions } from "../contexts/OptionsContext"
 import { usePath } from "../contexts/PathContext"
 import { blinkAnimation, pulseAnimation } from "./Animations"
 import { Tooltip } from "./Tooltip"
+import { Depth } from "~/metrics/metrics"
 
 type CircleOrRectHiearchyNode = HierarchyCircularNode<HydratedGitObject> | HierarchyRectangularNode<HydratedGitObject>
 
@@ -43,17 +44,39 @@ interface ChartProps {
 
 export function Chart(props: ChartProps) {
   const [hoveredBlob, setHoveredBlob] = useState<HydratedGitBlobObject | null>(null)
-  const { analyzerData } = useData()
-  const { chartType } = useOptions()
+  const { analyzerData, editedFilesSingleCommit } = useData()
+  const { chartType, depthType } = useOptions()
   const { path } = usePath()
   const { clickedObject, setClickedObject } = useClickedObject()
   const { setPath } = usePath()
 
+  let numberOfDepthLevels: number | undefined = undefined
+  switch (depthType) {
+    case "One":
+      numberOfDepthLevels = 1
+      break
+    case "Two":
+      numberOfDepthLevels = 2
+      break
+    case "Three":
+      numberOfDepthLevels = 3
+      break
+    case "Four":
+      numberOfDepthLevels = 4
+      break
+    case "Five":
+      numberOfDepthLevels = 5
+      break
+    case "Full":
+    default:
+      numberOfDepthLevels = undefined
+  }
+
   const nodes = useMemo(() => {
     return createPartitionedHiearchy(analyzerData.commit, getPaddedSizeProps(props.size, chartType), chartType, path)
-  }, [chartType, analyzerData.commit, props.size, path])
+  }, [depthType, chartType, analyzerData.commit, props.size, path])
 
-  useEffect(() => setHoveredBlob(null), [chartType, analyzerData.commit, props.size])
+  useEffect(() => setHoveredBlob(null), [depthType, chartType, analyzerData.commit, props.size])
 
   const createGroupHandlers = (d: CircleOrRectHiearchyNode) =>
     isBlob(d.data)
@@ -79,15 +102,21 @@ export function Chart(props: ChartProps) {
         viewBox={`0 ${-EstimatedLetterHeightForDirText} ${props.size.width} ${props.size.height}`}
       >
         {nodes?.descendants().map((d, i) => {
-          return (
-            <G
-              blink={clickedObject?.path === d.data.path}
-              key={`${chartType}${d.data.path}`}
-              {...createGroupHandlers(d)}
-            >
-              <Node isRoot={i === 0} d={d} />
-            </G>
-          )
+          if (numberOfDepthLevels !== undefined && d.depth > numberOfDepthLevels) return null
+            return (
+              <G
+                blink={clickedObject?.path === d.data.path}
+                shouldBeInForeground={
+                  editedFilesSingleCommit.length == 0
+                    ? true
+                    : editedFilesSingleCommit.includes(d.data.path.slice(d.data.path.indexOf("/") + 1))
+                }
+                key={`${chartType}${d.data.path}`}
+                {...createGroupHandlers(d)}
+              >
+                <Node isRoot={i === 0} d={d} />
+              </G>
+            )
         })}
       </SVG>
       {typeof document !== "undefined" ? <Tooltip hoveredBlob={hoveredBlob} /> : null}
@@ -95,10 +124,11 @@ export function Chart(props: ChartProps) {
   )
 }
 
-const G = styled.g<{ blink: boolean }>`
+const G = styled.g<{ blink: boolean; shouldBeInForeground: boolean }>`
   animation-name: ${(props) => (props.blink ? blinkAnimation : "none")};
   animation-duration: 2s;
   animation-iteration-count: infinite;
+  opacity: ${(props) => (props.shouldBeInForeground ? 1 : 0.1)};
 `
 
 const Node = memo(function Node({ d, isRoot }: { d: CircleOrRectHiearchyNode; isRoot: boolean }) {

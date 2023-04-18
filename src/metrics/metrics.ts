@@ -29,6 +29,17 @@ export const Metric = {
   TRUCK_FACTOR: "Truck factor",
 }
 
+export type DepthType = keyof typeof Depth
+
+export const Depth = {
+  Full: "Full",
+  One: "1",
+  Two: "2",
+  Three: "3",
+  Four: "4",
+  Five: "5",
+}
+
 export type MetricType = keyof typeof Metric
 
 export function createMetricData(data: AnalyzerData): MetricsData {

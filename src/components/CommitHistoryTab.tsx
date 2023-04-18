@@ -16,8 +16,8 @@ import { Tag } from "./Tag"
 import { useCommitTab } from "~/contexts/CommitTabContext"
 import { useMetrics } from "~/contexts/MetricContext"
 import { EnumSelect } from "./EnumSelect"
-import Accordion, { AccordionData } from "./Accordion"
 import { RowWrapFlex } from "./pure/Flex"
+import { MenuItem, MenuTab } from "./MenuTab"
 
 const commitCutoff = 10
 
@@ -30,8 +30,7 @@ export function renderCommitHistoryTab() {
   const [sortMethods, setSortMethods] = useState<SortCommitsMethods>("date")
   const [selectedCommit, setSelectedCommit] = useState<GitLogEntry | undefined>(undefined)
   const [message, setMessage] = useState<string>("")
-  const [openFilters, setOpenFilters] = useState(false)
-  const [openSorting, setOpenSorting] = useState(false)
+  const [openTabIndex, setOpenTabIndex] = useState<number | undefined>(undefined)
   const [isAscendingOrder, setIsAscendingOrder] = useState(true)
 
   if (!clickedObject) return null
@@ -57,7 +56,12 @@ export function renderCommitHistoryTab() {
     ? dateInputFormat(fileCommits[0].time)
     : undefined
 
-  const items: Array<AccordionData> = new Array<AccordionData>()
+  const items: Array<MenuItem> = new Array<MenuItem>()
+  items.push({
+    title: "Sorting",
+    content: createSorting(isAscendingOrder, setIsAscendingOrder, setSortMethods),
+    onChange: (index: number) => setOpenTabIndex(index)
+  })
   items.push({
     title: "Filters",
     content: createFilters(
@@ -74,10 +78,7 @@ export function renderCommitHistoryTab() {
       endValue,
       startValue
     ),
-  })
-  items.push({
-    title: "Sorting",
-    content: createSorting(isAscendingOrder, setIsAscendingOrder, setSortMethods),
+    onChange: (index: number) => setOpenTabIndex(index),
   })
 
   return (
@@ -91,14 +92,7 @@ export function renderCommitHistoryTab() {
           </div>
           <Spacer xl />
           <Fragment key={new Date().toString()}>
-            <Accordion
-              multipleOpen={true}
-              openByDefault={false}
-              currentState={[openFilters, openSorting]}
-              actionClickLabels={(idx) => (idx == 0 ? setOpenFilters(!openFilters) : setOpenSorting(!openSorting))}
-              items={items}
-              itemsCutoff={5}
-            ></Accordion>
+            <MenuTab items={items} isSelected={openTabIndex}></MenuTab>
           </Fragment>
           <Spacer sm />
           <Spacer xl />

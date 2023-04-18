@@ -71,6 +71,7 @@ export const loader = async ({ params }: LoaderArgs) => {
 
   invalidateCache = false
   const repo = await GitCaller.getRepoMetadata(options.path)
+  const editedFilesSingleCommit = await GitCaller.gitAllEditedFiles(options.path, truckConfig.commitHash)
 
   if (!repo) {
     throw Error("Error loading repo")
@@ -81,7 +82,7 @@ export const loader = async ({ params }: LoaderArgs) => {
     repo,
     gitTruckInfo: await getGitTruckInfo(),
     truckConfig,
-    editedFilesSingleCommit: []
+    editedFilesSingleCommit
   })
 }
 
@@ -91,7 +92,6 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 
   const formData = await request.formData()
-  const formName = formData.get("formName")
 
    const [args] = await getTruckConfigWithArgs(params["repo"])
    const path = resolve(args.path, params["repo"])
@@ -113,7 +113,7 @@ export const action: ActionFunction = async ({ request, params }) => {
        await updateTruckConfig(path, (prevConfig) => {
          return {
            ...prevConfig,
-           commitHash: commitHash.toString(),
+           commitHash: commitHash == "reset" ? "" :commitHash.toString(),
          }
        })
        return null

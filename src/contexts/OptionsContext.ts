@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react"
-import type { AuthorshipType, MetricType } from "../metrics/metrics"
+import { AuthorshipType, Depth, DepthType, MetricType } from "../metrics/metrics"
 import { Authorship, Metric } from "../metrics/metrics"
 
 export const Chart = {
@@ -13,11 +13,13 @@ export interface Options {
   metricType: MetricType
   chartType: ChartType
   authorshipType: AuthorshipType
+  depthType: DepthType
   animationsEnabled: boolean
   labelsVisible: boolean
   setMetricType: (metricType: MetricType) => void
   setChartType: (chartType: ChartType) => void
   setAuthorshipType: (authorshipType: AuthorshipType) => void
+  setDepthType: (depthType: DepthType) => void
   setAnimationsEnabled: (animationsEnabled: boolean) => void
   setLabelsVisible: (labelsVisible: boolean) => void
 }
@@ -37,6 +39,7 @@ export function getDefaultOptions(): Options {
     metricType: Object.keys(Metric)[0] as MetricType,
     chartType: Object.keys(Chart)[0] as ChartType,
     authorshipType: Object.keys(Authorship)[0] as AuthorshipType,
+    depthType: Object.keys(Depth)[0] as DepthType,
     animationsEnabled: true,
     labelsVisible: true,
     setChartType: () => {
@@ -47,6 +50,9 @@ export function getDefaultOptions(): Options {
     },
     setAuthorshipType: () => {
       throw new Error("No AuthorshipTypeSetter provided")
+    },
+    setDepthType: () => {
+      throw new Error("No DepthTypeeSetter provided")
     },
     setAnimationsEnabled: () => {
       throw new Error("No animationsEnabledSetter provided")

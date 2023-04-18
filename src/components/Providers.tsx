@@ -9,7 +9,7 @@ import type { ChartType, Options } from "../contexts/OptionsContext"
 import { getDefaultOptions, OptionsContext } from "../contexts/OptionsContext"
 import { PathContext } from "../contexts/PathContext"
 import { SearchContext } from "../contexts/SearchContext"
-import type { AuthorshipType, MetricsData, MetricType } from "../metrics/metrics"
+import type { AuthorshipType, DepthType, MetricsData, MetricType } from "../metrics/metrics"
 import { createMetricData as createMetricsData } from "../metrics/metrics"
 
 interface ProvidersProps {
@@ -65,6 +65,11 @@ export function Providers({ children, data }: ProvidersProps) {
         setOptions((prevOptions) => ({
           ...(prevOptions ?? getDefaultOptions()),
           authorshipType,
+        })),
+      setDepthType: (depthType: DepthType) =>
+        setOptions((prevOptions) => ({
+          ...(prevOptions ?? getDefaultOptions()),
+          depthType,
         })),
       setHoveredBlob: (blob: HydratedGitBlobObject | null) =>
         setOptions((prevOptions) => ({
