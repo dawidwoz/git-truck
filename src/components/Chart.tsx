@@ -43,7 +43,7 @@ interface ChartProps {
 
 export function Chart(props: ChartProps) {
   const [hoveredBlob, setHoveredBlob] = useState<HydratedGitBlobObject | null>(null)
-  const { analyzerData } = useData()
+  const { analyzerData, editedFilesSingleCommit } = useData()
   const { chartType } = useOptions()
   const { path } = usePath()
   const { clickedObject, setClickedObject } = useClickedObject()
@@ -82,6 +82,11 @@ export function Chart(props: ChartProps) {
           return (
             <G
               blink={clickedObject?.path === d.data.path}
+              shouldBeInForeground={
+                editedFilesSingleCommit.length == 0
+                  ? true
+                  : editedFilesSingleCommit.includes(d.data.path.slice(d.data.path.indexOf("/") + 1))
+              }
               key={`${chartType}${d.data.path}`}
               {...createGroupHandlers(d)}
             >
@@ -95,10 +100,11 @@ export function Chart(props: ChartProps) {
   )
 }
 
-const G = styled.g<{ blink: boolean }>`
+const G = styled.g<{ blink: boolean; shouldBeInForeground: boolean }>`
   animation-name: ${(props) => (props.blink ? blinkAnimation : "none")};
   animation-duration: 2s;
   animation-iteration-count: infinite;
+  opacity: ${(props) => (props.shouldBeInForeground ? 1 : 0.1)};
 `
 
 const Node = memo(function Node({ d, isRoot }: { d: CircleOrRectHiearchyNode; isRoot: boolean }) {

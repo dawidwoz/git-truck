@@ -264,16 +264,15 @@ export class GitCaller {
     return result.trim()
   }
 
-  async gitAllEditedFiles(commitHash: string): Promise<RegExpMatchArray[]> {
+  static async gitAllEditedFiles(repo: string, commitHash?: string): Promise<string[]> {
     if (!commitHash) {
-      console.error("edited files cannot be reached")
       return []
     }
     const args = ["diff-tree", "--no-commit-id", "--name-only", "-r", commitHash]
 
-    const result = (await runProcess(this.repo, "git", args)) as string
-    console.log(result)
-    return [...result.matchAll(/\n/)]
+    const files = (await runProcess(repo, "git", args)) as string
+    const result: string[] = files.split("\n")
+    return result
   }
 
   static async retrieveCachedResult({

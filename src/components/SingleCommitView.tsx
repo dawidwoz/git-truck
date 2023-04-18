@@ -40,7 +40,12 @@ export function SingleCommitView(props: SingleCommitViewProps) {
   return (
     <>
       <RowWrapFlex>
-        <BackArrow onClick={props.onClose}>
+        <BackArrow
+          onClick={() => {
+            props.onClose()
+            sendRequest("reset")
+          }}
+        >
           <ArrowBackIcon size="24" />
         </BackArrow>
         <BaseTitle style={{ marginLeft: "5%" }} title="Commit View">
@@ -60,9 +65,8 @@ export function SingleCommitView(props: SingleCommitViewProps) {
         <DetailsKey grow>Created by</DetailsKey>
         <DetailsValue>{props.commit.author}</DetailsValue>
       </DetailsEntries>
-      {/* <Button onClick={() => sendRequest(props.commit.hash)}>
-        Show edited files
-      </Button> */}
+      <Spacer md />
+      <Button onClick={() => sendRequest(props.commit.hash)}>Show edited files</Button>
     </>
   )
 }
