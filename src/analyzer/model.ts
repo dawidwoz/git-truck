@@ -27,6 +27,8 @@ export interface TruckUserConfig {
   hiddenFiles?: string[]
   invalidateCache?: boolean
   commitHash?: string
+  filePath?: string
+  commitHashes?: string
 }
 
 export interface TruckConfig {
