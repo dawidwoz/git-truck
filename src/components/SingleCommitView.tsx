@@ -1,12 +1,12 @@
 import { GitLogEntry } from "~/analyzer/model"
-import { BaseTitle, Button, CloseButton, DetailsKey, DetailsValue } from "~/components/util"
-import { useSubmit } from "@remix-run/react"
+import { BaseTitle, Button, CloseButton, DetailsKey, DetailsValue, isItValidPath } from "~/components/util"
+import { useSubmit, useTransition } from "@remix-run/react"
 import { useData } from "~/contexts/DataContext"
 import { Spacer } from "~/components/Spacer"
 import styled from "styled-components"
 import { ArrowBack as ArrowBackIcon } from "@styled-icons/material"
 import { dateTimeFormatLong } from "~/util"
-import { DetailsEntries } from "./GeneralTab"
+import { DetailsEntries, DetailsHeading, DistEntries } from "./GeneralTab"
 import { RowWrapFlex } from "./pure/Flex"
 import { getPathFromRepoAndHead } from "~/util"
 
@@ -24,7 +24,8 @@ const BackArrow = styled(CloseButton)`
 `
 
 export function SingleCommitView(props: SingleCommitViewProps) {
-  const { repo } = useData()
+  const { repo, analyzerData, editedFilesSingleCommit } = useData()
+  const { state } = useTransition()
   const submit = useSubmit()
 
   function sendRequest(commitHash: string) {
@@ -43,7 +44,7 @@ export function SingleCommitView(props: SingleCommitViewProps) {
         <BackArrow
           onClick={() => {
             props.onClose()
-            sendRequest("reset")
+            editedFilesSingleCommit.length != 0 ? sendRequest("reset") : null
           }}
         >
           <ArrowBackIcon size="24" />
@@ -66,7 +67,31 @@ export function SingleCommitView(props: SingleCommitViewProps) {
         <DetailsValue>{props.commit.author}</DetailsValue>
       </DetailsEntries>
       <Spacer md />
-      <Button onClick={() => sendRequest(props.commit.hash)}>Show edited files</Button>
+      <Button
+        title="All files that were touched with this commit and are still present in the repository will be highlighted."
+        disabled={state !== "idle"}
+        onClick={() => sendRequest(props.commit.hash)}
+      >
+        Show edited files
+      </Button>
+      {editedFilesSingleCommit.length != 0 && (
+        <>
+          <DetailsHeading>File edited with this commit and still present in the repository</DetailsHeading>
+          <DistEntries>
+            {editedFilesSingleCommit.map((file) => {
+              if (!isItValidPath(analyzerData, file)) return null
+              return (
+                <>
+                  <DetailsKey grow key={file}>
+                    {file}
+                  </DetailsKey>
+                  <DetailsValue></DetailsValue>
+                </>
+              )
+            })}
+          </DistEntries>
+        </>
+      )}
     </>
   )
 }

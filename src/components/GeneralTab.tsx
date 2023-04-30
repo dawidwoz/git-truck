@@ -7,7 +7,7 @@ import { AuthorDistFragment } from "~/components/AuthorDistFragment"
 import { AuthorDistOther } from "~/components/AuthorDistOther"
 import { Spacer } from "~/components/Spacer"
 import { ExpandDown } from "~/components/Toggle"
-import { DetailsKey, DetailsValue, Button, BaseTitle } from "~/components/util"
+import { DetailsKey, DetailsValue, Button, BaseTitle, isItValidPath } from "~/components/util"
 import { useClickedObject } from "~/contexts/ClickedContext"
 import { useData } from "~/contexts/DataContext"
 import { useOptions } from "~/contexts/OptionsContext"
@@ -98,16 +98,22 @@ export function renderGeneralTab(showUnionAuthorsModal: () => void) {
       <Spacer />
       {fileCorrelationFiles == clickedObject.path && state === "idle" && (
         <>
-          <DetailsHeading>File correlation</DetailsHeading>
-          <DetailsEntries>
+          <DetailsHeading>File correlation based on commits</DetailsHeading>
+          <DistEntries>
             {Object.keys(correlatedFiles)
               .sort(function (a, b) {
                 return correlatedFiles[a] < correlatedFiles[b] ? 1 : correlatedFiles[a] > correlatedFiles[b] ? -1 : 0
               })
               .map((key) => {
-                if (key === "count" || key == clickedObject.path.slice(clickedObject.path.indexOf("/") + 1)) return null
+                if (
+                  key === "" ||
+                  key === "count" ||
+                  key == clickedObject.path.slice(clickedObject.path.indexOf("/") + 1)
+                )
+                  return null
                 const correlation = (correlatedFiles[key] / totalNumberCommits) * 100
                 if (49 > correlation) return null
+                if (!isItValidPath(analyzerData, key)) return null
                 hasSomeCorrelationFiles = true
                 return (
                   <>
@@ -116,8 +122,8 @@ export function renderGeneralTab(showUnionAuthorsModal: () => void) {
                   </>
                 )
               })}
-            {!hasSomeCorrelationFiles && <DetailsKey grow>No correlation files found</DetailsKey>}
-          </DetailsEntries>
+            {!hasSomeCorrelationFiles && <DetailsKey grow>No correlation found</DetailsKey>}
+          </DistEntries>
         </>
       )}
       <Spacer />
@@ -169,9 +175,13 @@ export function renderGeneralTab(showUnionAuthorsModal: () => void) {
           </Form>
           <Spacer />
           <div>
-            <Button disabled={state !== "idle"} onClick={() => sendRequest(location.pathname)}>
+            <Button
+              title="Show the list of files that are changed along with this file in at least 50% commits and are still present in the repository"
+              disabled={state !== "idle"}
+              onClick={() => sendRequest(location.pathname)}
+            >
               <Analytics display="inline-block" height="1rem" />
-              Show files correlation
+              Show file correlation based on commits
             </Button>
           </div>
         </>
@@ -208,7 +218,7 @@ export const DetailsHeading = styled.h3`
   font-size: 1.1em;
 `
 
-export const AuthorDistEntries = styled.div`
+export const DistEntries = styled.div`
   display: grid;
   grid-template-columns: 1fr auto;
   gap: calc(0.5 * var(--unit)) calc(var(--unit) * 3);
@@ -353,13 +363,13 @@ function AuthorDistribution(props: { authors: Record<string, number> | undefined
       <>
         <DetailsHeading>Author distribution</DetailsHeading>
         <Spacer />
-        <AuthorDistEntries>
+        <DistEntries>
           {contribDist.length > 0 && !hasZeroContributions(props.authors) ? (
             <AuthorDistFragment show={true} items={contribDist} />
           ) : (
             <p>No authors found</p>
           )}
-        </AuthorDistEntries>
+        </DistEntries>
       </>
     )
   }
@@ -370,7 +380,7 @@ function AuthorDistribution(props: { authors: Record<string, number> | undefined
         <ExpandDown relative={true} collapse={collapse} toggle={() => setCollapse(!collapse)} />
       </AuthorDistHeader>
       <Spacer xs />
-      <AuthorDistEntries>
+      <DistEntries>
         <AuthorDistFragment show={true} items={contribDist.slice(0, authorCutoff)} />
         <AuthorDistFragment show={!collapse} items={contribDist.slice(authorCutoff)} />
         <Spacer />
@@ -379,7 +389,7 @@ function AuthorDistribution(props: { authors: Record<string, number> | undefined
           items={contribDist.slice(authorCutoff)}
           toggle={() => setCollapse(!collapse)}
         />
-      </AuthorDistEntries>
+      </DistEntries>
     </>
   )
 }

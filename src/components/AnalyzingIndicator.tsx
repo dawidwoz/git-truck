@@ -27,10 +27,16 @@ const LoadingText = styled.div`
 export function AnalyzingIndicator() {
   return (
     <FullViewbox>
-      <LoadingPane>
-        <img src={anitruck} alt={"🚛"} width={400} />
-        <LoadingText>Analyzing...</LoadingText>
-      </LoadingPane>
+      <LoadingIndicator />
     </FullViewbox>
+  )
+}
+
+export function LoadingIndicator() {
+  return (
+    <LoadingPane>
+      <img src={anitruck} alt={"🚛"} width={400} />
+      <LoadingText>Analyzing...</LoadingText>
+    </LoadingPane>
   )
 }

@@ -131,11 +131,9 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   if (commitHashes && typeof commitHashes === "string") {
     if (!commitHashes) return null
-    const filePath = formData.get("filePath")
     await updateTruckConfig(path, (prevConfig) => {
       return {
         ...prevConfig,
-        filePath: filePath,
         commitHashes: commitHashes,
       }
     })
@@ -144,6 +142,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   if (commitHash && typeof commitHash === "string") {
     if (!commitHash) return null
+    // window.sessionStorage.setItem("commitHash", commitHash)
     await updateTruckConfig(path, (prevConfig) => {
       return {
         ...prevConfig,

@@ -1,6 +1,8 @@
 import { Close as CloseIcon } from "@styled-icons/material"
 import styled, { css } from "styled-components"
 import { compare, valid, clean } from "semver"
+import { AnalyzerData, HydratedGitTreeObject } from "~/analyzer/model"
+import { allExceptLast, getSeparator } from "~/util"
 
 export const branchCompare = (a: string, b: string): number => {
   const defaultBranchNames = ["main", "master"]
@@ -22,6 +24,28 @@ export const semverCompare = (a: string, b: string): number => {
   }
 
   return compare(validA, validB)
+}
+
+export function isItValidPath(analyzerData: AnalyzerData, path: string): boolean {
+  const splittedPath = path.split("/")
+  const tree = analyzerData.commit.tree as HydratedGitTreeObject
+  const currentIndex = 0
+  return findChild(tree, currentIndex, splittedPath)
+}
+
+function findChild(innerTree: HydratedGitTreeObject, index: number, splittedPath: string[]): boolean {
+  for (const child of innerTree.children) {
+    if (child.name === splittedPath[index]) {
+      if (index === splittedPath.length - 1) {
+        return true
+      }
+      if (child.type === "tree") {
+        const innerTree = child as HydratedGitTreeObject
+        return findChild(innerTree, index + 1, splittedPath)
+      }
+    }
+  }
+  return false
 }
 
 const titleBaseStyles = css`
@@ -241,7 +265,7 @@ export const DetailsKey = styled.div<{ grow?: boolean }>`
 
 export const DetailsValue = styled.p`
   overflow-wrap: anywhere;
-  word-wrap: break-word;
+  word-wrap: normal;
   overflow: hidden;
   font-size: 0.9em;
 `
@@ -257,7 +281,7 @@ export const Grower = styled.div`
   flex-grow: 1;
 `
 
-export const SelectWithEllipsis = styled.select<{ inline?: boolean, showNoLabelWhenInactive?: boolean }>`
+export const SelectWithEllipsis = styled.select<{ inline?: boolean; showNoLabelWhenInactive?: boolean }>`
   text-overflow: ellipsis;
   overflow: scroll;
   width: 100%;
