@@ -64,17 +64,17 @@ function CommitHistory(props: { commits: GitLogEntry[] | undefined }) {
   if (commits.length <= commitCutoff + 1) {
     return (
       <>
-        <DetailsHeading>Commit History</DetailsHeading>
+        {/* <DetailsHeading>Commit History</DetailsHeading>
         <Spacer />
         <AuthorDistEntries>
           {commits.length > 0 ? <CommitDistFragment show={true} items={commits} /> : <p>No commits found</p>}
-        </AuthorDistEntries>
+        </AuthorDistEntries> */}
       </>
     )
   }
   return (
     <>
-      <AuthorDistHeader>
+      {/* <AuthorDistHeader>
         <DetailsHeading>Commit History</DetailsHeading>
         <ExpandDown relative={true} collapse={collapse} toggle={() => setCollapse(!collapse)} />
       </AuthorDistHeader>
@@ -84,7 +84,7 @@ function CommitHistory(props: { commits: GitLogEntry[] | undefined }) {
         <CommitDistFragment show={!collapse} items={commits.slice(commitCutoff)} />
         <Spacer />
         <CommitDistOther show={collapse} items={commits.slice(commitCutoff)} toggle={() => setCollapse(!collapse)} />
-      </AuthorDistEntries>
+      </AuthorDistEntries> */}
       </>
   )
 }
