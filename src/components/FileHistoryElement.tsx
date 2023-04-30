@@ -2,7 +2,7 @@ import { GitLogEntry, HydratedGitObject, HydratedGitTreeObject } from "~/analyze
 import { Fragment } from "react"
 import { dateFormatLong } from "~/util"
 import { Spacer } from "./Spacer"
-import { AuthorDistEntries, AuthorDistHeader, DetailsHeading } from "./GeneralTab"
+import { DistEntries, AuthorDistHeader, DetailsHeading } from "./GeneralTab"
 import styled from "styled-components"
 import { useData } from "~/contexts/DataContext"
 import Accordion, { AccordionData } from "./Accordion"
@@ -132,7 +132,7 @@ function CommitHistory(props: { commits: GitLogEntry[] | undefined }) {
       <>
         <DetailsHeading>Commit History</DetailsHeading>
         <Spacer />
-        <AuthorDistEntries>{<p>No commits found</p>}</AuthorDistEntries>
+        <DistEntries>{<p>No commits found</p>}</DistEntries>
       </>
     )
   }
@@ -142,10 +142,10 @@ function CommitHistory(props: { commits: GitLogEntry[] | undefined }) {
         <DetailsHeading>Commit History</DetailsHeading>
       </AuthorDistHeader>
       <Spacer xs />
-      <AuthorDistEntries>
+      <DistEntries>
         <CommitDistFragment show={true} items={commits} commitCutoff={commitCutoff} />
         <Spacer />
-      </AuthorDistEntries>
+      </DistEntries>
     </>
   )
 }

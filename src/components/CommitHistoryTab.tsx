@@ -25,6 +25,7 @@ export function renderCommitHistoryTab() {
   const { setClickedObject, clickedObject } = useClickedObject()
   const { startDate, setStartDate, endDate, setEndDate } = useCommitTab()
   const [mergeCommitsEnabled, setMergeCommitsEnabled] = useState(true)
+  const [searchInDescription, setSearchInDescription] = useState(false)
   const [includeAuthors, setIncludeAuthors] = useState(true)
   const [authors, setAuthors] = useState<Set<string>>(new Set([]))
   const [sortMethods, setSortMethods] = useState<SortCommitsMethods>("date")
@@ -39,6 +40,7 @@ export function renderCommitHistoryTab() {
     clickedObject,
     includeAuthors,
     mergeCommitsEnabled,
+    searchInDescription,
     authors,
     startDate,
     endDate,
@@ -72,7 +74,9 @@ export function renderCommitHistoryTab() {
       includeAuthors,
       setIncludeAuthors,
       mergeCommitsEnabled,
+      searchInDescription,
       setMergeCommitsEnabled,
+      setSearchInDescription,
       setStartDate,
       setEndDate,
       endValue,
@@ -123,7 +127,9 @@ function createFilters(
   includeAuthors: boolean,
   setIncludeAuthors: (t: boolean) => void,
   mergeCommitsEnabled: boolean,
+  searchInDescription: boolean,
   setMergeCommitsEnabled: (t: boolean) => void,
+  setSearchInDescription: (t: boolean) => void,
   setStartDate: (t: number) => void,
   setEndDate: (t: number) => void,
   endValue?: Date,
@@ -145,6 +151,15 @@ function createFilters(
         placeholder="Search for commits..."
         autoFocus={message != ""}
       />
+      <Spacer />
+      <Label>
+        <Checkbox
+          type="checkbox"
+          checked={searchInDescription}
+          onChange={(e) => setSearchInDescription(e.target.checked)}
+        />
+        <span>Search also in the commit description</span>
+      </Label>
       <Spacer lg />
 
       <div>
@@ -277,6 +292,7 @@ function getAllCommits(
   clickedObject: HydratedGitObject,
   includeAuthors: boolean,
   mergeCommitsEnabled: boolean,
+  searchInDescription: boolean,
   authors: Set<string>,
   startDate: number | null,
   endDate: number | null,
@@ -301,9 +317,11 @@ function getAllCommits(
 
   fileCommits = rowCommits
     .map((c) => analyzerData.commits[c])
-    .filter((c) => (message ? c.message.toLowerCase().includes(message.toLowerCase()) : true))
+    .filter((c) => (message ? c.message.toLowerCase().includes(message.toLowerCase()) || (searchInDescription ? c.body.toLowerCase().includes(message.toLowerCase()) : false) : true))
     .filter((c) => authorFilterLogic(c, includeAuthors, authors))
-    .filter((c) => (!mergeCommitsEnabled ? !c.message.includes("Merge pull request") : true))
+    .filter((c) =>
+      !mergeCommitsEnabled ? !c.message.includes("Merge pull request") || !c.message.includes("Merge branch") : true
+    )
     .filter((c) => (startDate ? c.time * 1000 > startDate : true))
     .filter((c) => (endDate ? c.time * 1000 < endDate : true))
     .sort((a, b) => b.time - a.time)

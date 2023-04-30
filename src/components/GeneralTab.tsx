@@ -1,21 +1,21 @@
 import { useEffect, useRef, useState } from "react"
 import { AutoTextSize } from "auto-text-size"
 import styled from "styled-components"
-import { Form, useLocation, useTransition } from "@remix-run/react"
+import { useSubmit, Form, useLocation, useTransition } from "@remix-run/react"
 import type { HydratedGitBlobObject, HydratedGitObject, HydratedGitTreeObject } from "~/analyzer/model"
 import { AuthorDistFragment } from "~/components/AuthorDistFragment"
 import { AuthorDistOther } from "~/components/AuthorDistOther"
 import { Spacer } from "~/components/Spacer"
 import { ExpandDown } from "~/components/Toggle"
-import { DetailsKey, DetailsValue, Button, BaseTitle } from "~/components/util"
+import { DetailsKey, DetailsValue, Button, BaseTitle, isItValidPath } from "~/components/util"
 import { useClickedObject } from "~/contexts/ClickedContext"
 import { useData } from "~/contexts/DataContext"
 import { useOptions } from "~/contexts/OptionsContext"
 import { usePath } from "~/contexts/PathContext"
-import { dateFormatLong, last } from "~/util"
+import { dateFormatLong, getPathFromRepoAndHead, last } from "~/util"
 import byteSize from "byte-size"
 import type { AuthorshipType } from "~/metrics/metrics"
-import { PeopleAlt, OpenInNew } from "@styled-icons/material"
+import { PeopleAlt, OpenInNew, Analytics } from "@styled-icons/material"
 import { EyeClosed } from "@styled-icons/octicons"
 import { FileHistoryElement } from "./FileHistoryElement"
 
@@ -25,8 +25,10 @@ export function renderGeneralTab(showUnionAuthorsModal: () => void) {
   const { authorshipType } = useOptions()
   const { state } = useTransition()
   const { setPath, path } = usePath()
-  const { analyzerData } = useData()
+  const { repo, analyzerData, correlatedFiles } = useData()
+  const submit = useSubmit()
   const isProcessingHideRef = useRef(false)
+  const [fileCorrelationFiles, setFileCorrelationFiles] = useState("")
 
   useEffect(() => {
     if (isProcessingHideRef.current) {
@@ -43,6 +45,27 @@ export function renderGeneralTab(showUnionAuthorsModal: () => void) {
   if (!clickedObject) return null
   const isBlob = clickedObject.type === "blob"
   const extension = last(clickedObject.name.split("."))
+  const totalNumberCommits = correlatedFiles.count
+  let hasSomeCorrelationFiles = false
+
+  function sendRequest(filePath: string) {
+    const form = new FormData()
+    form.append("filePath", filePath)
+
+    let commitHashes = ""
+    if (clickedObject && clickedObject.type === "blob") {
+      for (const commit of clickedObject.commits) {
+        commitHashes += commit + ";"
+      }
+    }
+    form.append("commitHashes", commitHashes)
+
+    submit(form, {
+      action: `/${getPathFromRepoAndHead(repo.name, repo.currentHead)}`,
+      method: "post",
+    })
+    clickedObject?.path ? setFileCorrelationFiles(clickedObject.path) : null
+  }
 
   return (
     <>
@@ -72,6 +95,37 @@ export function renderGeneralTab(showUnionAuthorsModal: () => void) {
       )}
       <Spacer xl />
       <FileHistoryElement state={state} clickedObject={clickedObject} />
+      <Spacer />
+      {fileCorrelationFiles == clickedObject.path && state === "idle" && (
+        <>
+          <DetailsHeading>File correlation based on commits</DetailsHeading>
+          <DistEntries>
+            {Object.keys(correlatedFiles)
+              .sort(function (a, b) {
+                return correlatedFiles[a] < correlatedFiles[b] ? 1 : correlatedFiles[a] > correlatedFiles[b] ? -1 : 0
+              })
+              .map((key) => {
+                if (
+                  key === "" ||
+                  key === "count" ||
+                  key == clickedObject.path.slice(clickedObject.path.indexOf("/") + 1)
+                )
+                  return null
+                const correlation = (correlatedFiles[key] / totalNumberCommits) * 100
+                if (49 > correlation) return null
+                if (!isItValidPath(analyzerData, key)) return null
+                hasSomeCorrelationFiles = true
+                return (
+                  <>
+                    <DetailsKey grow>{key}</DetailsKey>
+                    <DetailsValue>{correlation.toFixed(0) + "%"}</DetailsValue>
+                  </>
+                )
+              })}
+            {!hasSomeCorrelationFiles && <DetailsKey grow>No correlation found</DetailsKey>}
+          </DistEntries>
+        </>
+      )}
       <Spacer />
       <Button onClick={showUnionAuthorsModal}>
         <PeopleAlt display="inline-block" height="1rem" />
@@ -119,6 +173,17 @@ export function renderGeneralTab(showUnionAuthorsModal: () => void) {
               Open file
             </Button>
           </Form>
+          <Spacer />
+          <div>
+            <Button
+              title="Show the list of files that are changed along with this file in at least 50% commits and are still present in the repository"
+              disabled={state !== "idle"}
+              onClick={() => sendRequest(location.pathname)}
+            >
+              <Analytics display="inline-block" height="1rem" />
+              Show file correlation based on commits
+            </Button>
+          </div>
         </>
       ) : (
         <Form method="post" action={location.pathname}>
@@ -146,21 +211,21 @@ export const AuthorDistHeader = styled.div`
   justify-content: space-between;
 `
 
-  export const DetailsHeading = styled.h3`
-    font-size: calc(var(--unit) * 2);
-    padding-top: calc(var(--unit));
-    padding-bottom: calc(var(--unit) * 0.5);
-    font-size: 1.1em;
-  `
+export const DetailsHeading = styled.h3`
+  font-size: calc(var(--unit) * 2);
+  padding-top: calc(var(--unit));
+  padding-bottom: calc(var(--unit) * 0.5);
+  font-size: 1.1em;
+`
 
-  export const AuthorDistEntries = styled.div`
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: calc(0.5 * var(--unit)) calc(var(--unit) * 3);
-    & > ${DetailsValue} {
-      text-align: right;
-    }
-  `
+export const DistEntries = styled.div`
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: calc(0.5 * var(--unit)) calc(var(--unit) * 3);
+  & > ${DetailsValue} {
+    text-align: right;
+  }
+`
 
 export const DetailsEntries = styled.div`
   display: grid;
@@ -298,13 +363,13 @@ function AuthorDistribution(props: { authors: Record<string, number> | undefined
       <>
         <DetailsHeading>Author distribution</DetailsHeading>
         <Spacer />
-        <AuthorDistEntries>
+        <DistEntries>
           {contribDist.length > 0 && !hasZeroContributions(props.authors) ? (
             <AuthorDistFragment show={true} items={contribDist} />
           ) : (
             <p>No authors found</p>
           )}
-        </AuthorDistEntries>
+        </DistEntries>
       </>
     )
   }
@@ -315,7 +380,7 @@ function AuthorDistribution(props: { authors: Record<string, number> | undefined
         <ExpandDown relative={true} collapse={collapse} toggle={() => setCollapse(!collapse)} />
       </AuthorDistHeader>
       <Spacer xs />
-      <AuthorDistEntries>
+      <DistEntries>
         <AuthorDistFragment show={true} items={contribDist.slice(0, authorCutoff)} />
         <AuthorDistFragment show={!collapse} items={contribDist.slice(authorCutoff)} />
         <Spacer />
@@ -324,7 +389,7 @@ function AuthorDistribution(props: { authors: Record<string, number> | undefined
           items={contribDist.slice(authorCutoff)}
           toggle={() => setCollapse(!collapse)}
         />
-      </AuthorDistEntries>
+      </DistEntries>
     </>
   )
 }

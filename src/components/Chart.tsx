@@ -26,7 +26,9 @@ import { useOptions } from "../contexts/OptionsContext"
 import { usePath } from "../contexts/PathContext"
 import { blinkAnimation, pulseAnimation } from "./Animations"
 import { Tooltip } from "./Tooltip"
-import { Depth } from "~/metrics/metrics"
+import { useSubmit, useTransition } from "@remix-run/react"
+import { getPathFromRepoAndHead } from "~/util"
+import { LoadingIndicator } from "~/components/AnalyzingIndicator"
 
 type CircleOrRectHiearchyNode = HierarchyCircularNode<HydratedGitObject> | HierarchyRectangularNode<HydratedGitObject>
 
@@ -44,11 +46,23 @@ interface ChartProps {
 
 export function Chart(props: ChartProps) {
   const [hoveredBlob, setHoveredBlob] = useState<HydratedGitBlobObject | null>(null)
-  const { analyzerData, editedFilesSingleCommit } = useData()
+  const { analyzerData, editedFilesSingleCommit, repo } = useData()
   const { chartType, depthType } = useOptions()
   const { path } = usePath()
+  const { state } = useTransition()
   const { clickedObject, setClickedObject } = useClickedObject()
   const { setPath } = usePath()
+  const submit = useSubmit()
+
+  function sendRequest(commitHash: string) {
+    const form = new FormData()
+    form.append("commitHash", commitHash)
+
+    submit(form, {
+      action: `/${getPathFromRepoAndHead(repo.name, repo.currentHead)}`,
+      method: "post",
+    })
+  }
 
   let numberOfDepthLevels: number | undefined = undefined
   switch (depthType) {
@@ -78,31 +92,40 @@ export function Chart(props: ChartProps) {
 
   useEffect(() => setHoveredBlob(null), [depthType, chartType, analyzerData.commit, props.size])
 
-  const createGroupHandlers = (d: CircleOrRectHiearchyNode) =>
+  const createGroupHandlers = (d: CircleOrRectHiearchyNode, isCommitVisible: boolean) =>
     isBlob(d.data)
       ? {
-          onClick: () => setClickedObject(d.data),
+          onClick: () => {
+            if (state === "idle") {
+              setClickedObject(d.data)
+              isCommitVisible ? sendRequest("reset") : null
+            }
+          },
           onMouseOver: () => setHoveredBlob(d.data as HydratedGitBlobObject),
           onMouseOut: () => setHoveredBlob(null),
         }
       : {
           onClick: () => {
-            setClickedObject(d.data)
-            setPath(d.data.path)
+            if (state === "idle") {
+              setClickedObject(d.data)
+              setPath(d.data.path)
+              isCommitVisible ? sendRequest("reset") : null
+            }
           },
           onMouseOver: () => setHoveredBlob(null),
           onMouseOut: () => setHoveredBlob(null),
         }
 
-  return (
-    <>
-      <SVG
-        chartType={chartType}
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox={`0 ${-EstimatedLetterHeightForDirText} ${props.size.width} ${props.size.height}`}
-      >
-        {nodes?.descendants().map((d, i) => {
-          if (numberOfDepthLevels !== undefined && d.depth > numberOfDepthLevels) return null
+  if (state == "idle") {
+    return (
+      <>
+        <SVG
+          chartType={chartType}
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox={`0 ${-EstimatedLetterHeightForDirText} ${props.size.width} ${props.size.height}`}
+        >
+          {nodes?.descendants().map((d, i) => {
+            if (numberOfDepthLevels !== undefined && d.depth > numberOfDepthLevels) return null
             return (
               <G
                 blink={clickedObject?.path === d.data.path}
@@ -112,16 +135,19 @@ export function Chart(props: ChartProps) {
                     : editedFilesSingleCommit.includes(d.data.path.slice(d.data.path.indexOf("/") + 1))
                 }
                 key={`${chartType}${d.data.path}`}
-                {...createGroupHandlers(d)}
+                {...createGroupHandlers(d, editedFilesSingleCommit.length != 0)}
               >
                 <Node isRoot={i === 0} d={d} />
               </G>
             )
-        })}
-      </SVG>
-      {typeof document !== "undefined" ? <Tooltip hoveredBlob={hoveredBlob} /> : null}
-    </>
-  )
+          })}
+        </SVG>
+        {typeof document !== "undefined" ? <Tooltip hoveredBlob={hoveredBlob} /> : null}
+      </>
+    )
+  } else {
+    return <LoadingIndicator />
+  }
 }
 
 const G = styled.g<{ blink: boolean; shouldBeInForeground: boolean }>`

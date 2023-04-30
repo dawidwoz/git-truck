@@ -47,6 +47,9 @@ export interface RepoData {
     latestVersion: string | null
   }
   editedFilesSingleCommit: string[]
+  correlatedFiles: {
+    [key: string]: number
+  }
 }
 
 export const loader = async ({ params }: LoaderArgs) => {
@@ -72,6 +75,22 @@ export const loader = async ({ params }: LoaderArgs) => {
   invalidateCache = false
   const repo = await GitCaller.getRepoMetadata(options.path)
   const editedFilesSingleCommit = await GitCaller.gitAllEditedFiles(options.path, truckConfig.commitHash)
+  const allCommits = truckConfig.commitHashes?.split(";") ?? []
+  const correlatedFiles: {
+    [key: string]: number
+  } = { count: 0 }
+  for (const commit of allCommits) {
+    if (commit == "") continue
+    const editedFiles = await GitCaller.gitAllEditedFiles(options.path, commit)
+    for (const file of editedFiles) {
+      if (correlatedFiles.hasOwnProperty(file)) {
+        correlatedFiles[file] += 1
+      } else {
+        correlatedFiles[file] = 1
+      }
+    }
+    correlatedFiles.count += 1
+  }
 
   if (!repo) {
     throw Error("Error loading repo")
@@ -82,7 +101,8 @@ export const loader = async ({ params }: LoaderArgs) => {
     repo,
     gitTruckInfo: await getGitTruckInfo(),
     truckConfig,
-    editedFilesSingleCommit
+    editedFilesSingleCommit,
+    correlatedFiles,
   })
 }
 
@@ -93,8 +113,8 @@ export const action: ActionFunction = async ({ request, params }) => {
 
   const formData = await request.formData()
 
-   const [args] = await getTruckConfigWithArgs(params["repo"])
-   const path = resolve(args.path, params["repo"])
+  const [args] = await getTruckConfigWithArgs(params["repo"])
+  const path = resolve(args.path, params["repo"])
 
   const refresh = formData.get("refresh")
   const unignore = formData.get("unignore")
@@ -102,21 +122,34 @@ export const action: ActionFunction = async ({ request, params }) => {
   const fileToOpen = formData.get("open")
   const unionedAuthors = formData.get("unionedAuthors")
   const commitHash = formData.get("commitHash")
+  const commitHashes = formData.get("commitHashes")
 
   if (refresh) {
     invalidateCache = true
     return null
   }
-  
+
+  if (commitHashes && typeof commitHashes === "string") {
+    if (!commitHashes) return null
+    await updateTruckConfig(path, (prevConfig) => {
+      return {
+        ...prevConfig,
+        commitHashes: commitHashes,
+      }
+    })
+    return null
+  }
+
   if (commitHash && typeof commitHash === "string") {
-      if (!commitHash) return null
-       await updateTruckConfig(path, (prevConfig) => {
-         return {
-           ...prevConfig,
-           commitHash: commitHash == "reset" ? "" :commitHash.toString(),
-         }
-       })
-       return null
+    if (!commitHash) return null
+    // window.sessionStorage.setItem("commitHash", commitHash)
+    await updateTruckConfig(path, (prevConfig) => {
+      return {
+        ...prevConfig,
+        commitHash: commitHash == "reset" ? "" : commitHash.toString(),
+      }
+    })
+    return null
   }
 
   if (ignore && typeof ignore === "string") {
