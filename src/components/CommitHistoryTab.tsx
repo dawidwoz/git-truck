@@ -317,10 +317,17 @@ function getAllCommits(
 
   fileCommits = rowCommits
     .map((c) => analyzerData.commits[c])
-    .filter((c) => (message ? c.message.toLowerCase().includes(message.toLowerCase()) || (searchInDescription ? c.body.toLowerCase().includes(message.toLowerCase()) : false) : true))
+    .filter((c) =>
+      message
+        ? c.message.toLowerCase().includes(message.toLowerCase()) ||
+          (searchInDescription ? c.body.toLowerCase().includes(message.toLowerCase()) : false)
+        : true
+    )
     .filter((c) => authorFilterLogic(c, includeAuthors, authors))
     .filter((c) =>
-      !mergeCommitsEnabled ? !c.message.includes("Merge pull request") || !c.message.includes("Merge branch") : true
+      !mergeCommitsEnabled
+        ? !(c.message.toLowerCase().includes("merge pull request") || c.message.toLowerCase().includes("merge branch"))
+        : true
     )
     .filter((c) => (startDate ? c.time * 1000 > startDate : true))
     .filter((c) => (endDate ? c.time * 1000 < endDate : true))
